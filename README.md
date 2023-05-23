@@ -1,4 +1,4 @@
-### Analisador Léxico
+# Analisador Léxico
 
 ## Sobre o projeto
 
@@ -9,7 +9,8 @@ Trabalho desenvolvido para a disciplina de Engenharia de Linguagens, cujo objeti
 ## Como executar
 
 Para gerar o analisador léxico, verique se o Flex está instalado na máquina.
-Execute os seguintes passos:
+
+Em seguida, execute os seguintes passos:
 
 ```bash
 
