@@ -1,0 +1,36 @@
+void func merge(array int lista_esquerda[], array int lista_direita[], array int lista[]) {
+    int k = 0
+    while (int i < lista_esquerda.len() and int j < lista_direita.len()) {
+        if (lista_esquerda[i] <= lista_direita[j]) {
+            lista[k] = lista_esquerda[i]
+            i++
+        } else {
+            lista[k] = lista_direita[j]
+            j++
+        }
+        k++
+    }
+    while (i < lista_esquerda.len()) {
+        lista[k] = lista_esquerda[i]
+        i++
+        k++
+    }
+    while (k < lista_direita.len()) {
+        j++
+        k++
+    }
+}
+
+void func mergeSort(array int lista[]) {
+    if (lista.len() == 1) {return}
+    int meio = lista.len() / 2
+    int tamanho_esquerda = meio
+    int tamanho_direita = lista.len() - meio
+    array int lista_esquerda[tamanho_esquerda]
+    array int lista_direita[tamanho_direita]
+    for (int i = 0; i < tamanho_esquerda; i++) {lista_esquerda[i] = lista[i]}
+    for (int i = 0; i < tamanho_direita; i++) {lista_direita[i] = lista[meio + i]}
+    mergeSort(lista_esquerda)
+    mergeSort(lista_direita)
+    merge(lista_esquerda, lista_direita, lista)
+}
