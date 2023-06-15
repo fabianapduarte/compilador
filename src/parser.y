@@ -1,32 +1,32 @@
 %{
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
 
-int yylex(void);
-extern int yylineno;
-extern char * yytext;
+  int yylex(void);
+  extern int yylineno;
+  extern char * yytext;
 
 %}
 
 %union {
 	int    iValue; 	/* integer value */
-    float  fValue; 	/* float value */
-    bool   bValue; 	/* bool value */
+  float  fValue; 	/* float value */
+  bool   bValue; 	/* bool value */
 	char   cValue; 	/* char value */
 	char * sValue;  /* string value */
-	};
+  char * type;    /* string value */
+  char * id;      /* identfier */
+};
 
-%token <sValue> ID
-%token <sValue> TYPE
-%token <iValue> NUMBER
-%token FUNCTION PROCEDURE BEGIN_TOKEN END_TOKEN WHILE DO IF THEN ELSE ASSIGN 
+%token <id> ID
+%token <type> TYPE
+%token FUNC WHILE DO IF ELIF ELSE SWITCH CASE FOR BREAK CONTINUE PRINT RETURN GLOBAL CONST DEFAULT OR AND NOT  ASSIGN EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST PARSEINT PARSEFLOAT PARSECHAR PARSESTRING LITERAL
 
 %type <sValue> body
-%type <sValue> procedure
 %type <sValue> function
 %type <sValue> subpgrm
-%type <sValue> subpgrms args args_aux ids ids_aux
+%type <sValue> subpgrms args args_aux assign
 
 %start programa
 
@@ -37,42 +37,68 @@ subpgrms : {$$ = strdup("");}
          | subpgrm subpgrms {printf("%s\n%s", $1, $2);} 
          ;
 
-subpgrm : function  {$$ = $1;} 
-        | procedure {$$ = $1;} 
-        ;
+subpgrm : function {$$ = $1;} | decl_var | assign | conditionals | loops;
 
-function : FUNCTION ID '(' args ')' ':' TYPE body {printf("FUNCTION %s(%s) : %s %s", $2, $4, $7, $8);}  
+decl_var : TYPE ID ASSIGN expression ;
+
+function : TYPE FUNC ID '(' args ')' '{' body '}' {printf("FUNC %s(%s) : %s %s", $2, $4, $7, $8);}  
          ;
-
-procedure : PROCEDURE ID '(' args ')' body {printf("PROCEDURE %s() %s", $2, $6);} 
-          ;
 
 args : {$$ = strdup("");}
      | args_aux {$$ = $1;}
      ;
 
-args_aux : TYPE ids {printf("%s %s", $1, $2);}
-         | TYPE ids ';' args_aux {printf("%s %s; %s", $1, $2, $4);}
-         ;                  
+args_aux : TYPE ID {printf("%s %s", $1, $2);}
+         | TYPE ID ',' args_aux {printf("%s %s; %s", $1, $2, $4);}
+         ;                     
 
-ids :         {$$ = strdup("");}
-    | ids_aux {$$ = $1;}
-    ;
+body : ;
 
-ids_aux : ID             {$$ = $1;}
-        | ID ',' ids_aux {printf("%s, %s", $1, $3);}
-        ;            
+assign : TYPE ID ASSIGN expression ;
 
-corpo : BEGIN_TOKEN END_TOKEN {$$ = strdup("BEGIN END");} 
-      ;  
+expression : ID | LITERAL | binary_op ;
+
+binary_op : binary_op SUM term | binary_op SUBTRACTION term | term ;
+
+term : term MULTIPLICATION factor | term DIVISION factor | factor;
+
+factor : '(' expression ')' | expr_incr_decr | ID;
+
+expr_incr_decr : ID INCREMENT | ID DECREMENT | INCREMENT ID | DECREMENT ID;
+
+conditionals : conditional | conditional conditionals;
+
+conditional : if_else | if_elif | if_then | switch;
+
+if_else : if_then ELSE '{' subpgrms '}';
+
+if_elif : if_then ELIF '(' expression ')' '{' subpgrms '}' ;
+
+if_then : IF '(' expression ')' '{' subpgrms '}';
+
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' subpgrms BREAK '}' ;
+
+cases: case | case cases;
+
+case : CASE ID ':' subpgrms BREAK;
+
+loops : loop | loop loops ;
+
+loop : for | while | do_while ;
+
+for : FOR '(' decl_var ';' expression ';' expr_incr_decr ')' subpgrms;
+
+while : WHILE '(' expression ')' '{' subpgrms '}';
+
+do_while : DO '{' subpgrms '}' WHILE '(' expression ')';
 
 %%
 
-int main (void) {
-	return yyparse ( );
+int main(void) {
+	return yyparse();
 }
 
-int yyerror (char *msg) {
-	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
+int yyerror(char *msg) {
+	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
 }

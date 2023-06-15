@@ -1,88 +1,111 @@
 %{
-	#include<stdio.h>
+	#include <stdio.h>
+  #include "y.tab.h"
+  #include <string.h>
 %}
 
 %option yylineno
 
 DIGIT[0-9]+
-CHAR[a-zA-Z]
+CHAR[a-zA-Z0-9]
+STRING[a-zA-Z0-9]+
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
-SPACE[ ]
-OPENP[\(]
-CLOSEP[\)]
-OPENB[\{]
-CLOSEB[\}]
-OPENBKT[\[]
-CLOSEBKT[\]]
+PRINT[print\(\s*[\w\s"]*\s*\)]
 
 %%
-if {printf("[%s] -> if\n", yytext);}
-else {printf("[%s] -> else\n", yytext);}
-elif {printf("[%s] -> elif\n", yytext);}
-do {printf("[%s] -> do\n", yytext);}
-switch {printf("[%s] -> switch\n", yytext);}
-case {printf("[%s] -> case\n", yytext);}
 
-for {printf("[%s] -> LOOPING FOR\n", yytext);}
-while {printf("[%s] -> LOOPING WHILE\n", yytext);}
-break {printf("[%s] -> ESCAPE break\n", yytext);}
-continue {printf("[%s] -> ESCAPE continue\n", yytext);}
+[ \t\n]                   ;
 
-bool {printf("[%s] -> VARIABLE TYPE bool\n", yytext);}
-int {printf("[%s] -> VARIABLE TYPE int\n", yytext);}
-float {printf("[%s] -> VARIABLE TYPE float\n", yytext);}
-char {printf("[%s] -> VARIABLE TYPE char\n", yytext);}
-string {printf("[%s] -> VARIABLE TYPE string\n", yytext);}
-array {printf("[%s] -> VARIABLE TYPE array\n", yytext);}
-object {printf("[%s] -> VARIABLE TYPE object\n", yytext);}
+"if"                      { return(IF); }
+"else"                    { return(ELSE); }
+"elif"                    { return(ELIF); }
+"do"                      { return(DO); }
+"switch"                  { return(SWITCH); }
+"case"                    { return(CASE); }
+"for"                     { return(FOR); }
+"while"                   { return(WHILE); }
+"break"                   { return(BREAK); }
+"continue"                { return(CONTINUE); }
+{PRINT}                   { return(PRINT); }
+"func"                    { return(FUNC); }
+"return"                  { return(RETURN); }
+"global"                  { return(GLOBAL); }
+"const"                   { return(CONST); }
+"default"                 { return(DEFAULT); }
 
-print {printf("[%s] -> OUTPUT\n", yytext);}
-func {printf("[%s] -> FUNCTION\n", yytext);}
-return {printf("[%s] -> FUNCTION RETURN\n", yytext);}
-global {printf("[%s] -> GLOBAL ESCOPE\n", yytext);}
-int({IDENTIFIER})|float({IDENTIFIER})|char({IDENTIFIER})|string({IDENTIFIER}) {printf("[%s] -> CONVERSION\n", yytext);}
-const {printf("[%s] -> CONSTANT\n", yytext);}
-default {printf("[%s] -> GLOBAL ESCOPE\n", yytext);}
-true|false {printf("[%s] -> LOGICAL VALUE\n", yytext);}
+"or"                      { return(OR); }
+"and"                     { return(AND); }
+"not"                     { return(NOT); }
 
-"+" {printf("[%s] -> OP SUM\n", yytext);}
-"-" {printf("[%s] -> OP SUBTRACTION\n", yytext);}
-"*" {printf("[%s] -> OP MULTIPLICATION\n", yytext);}
-"/" {printf("[%s] -> OP DIVISION\n", yytext);}
-"%" {printf("[%s] -> OP REST\n", yytext);}
-"**" {printf("[%s] -> OP POWER\n", yytext);}
-"==" {printf("[%s] -> OP EQUALITY\n", yytext);}
-"=" {printf("[%s] -> OP ASSIGNMENT\n", yytext);}
-"!=" {printf("[%s] -> OP DIFFERENCE\n", yytext);}
-"++" {printf("[%s] -> OP INCREMENT\n", yytext);}
-"--" {printf("[%s] -> OP DECREMENT\n", yytext);}
-">" {printf("[%s] -> OP GREATER THAN\n", yytext);}
-"<" {printf("[%s] -> OP LESS THAN\n", yytext);}
-">=" {printf("[%s] -> OP GREATER THAN OR EQUAL\n", yytext);}
-"<=" {printf("[%s] -> OP LESS THAN OR EQUAL\n", yytext);}
-or {printf("[%s] -> OP LOGICAL OR \n", yytext);}
-and {printf("[%s] -> OP LOGICAL AND \n", yytext);}
-not {printf("[%s] -> OP LOGICAL NOT \n", yytext);}
+"("                       { return(yytext[0]); }
+")"                       { return(yytext[0]); }
+":"                       { return(yytext[0]); }
+","                       { return(yytext[0]); }
+"["                       { return(yytext[0]); }
+"]"                       { return(yytext[0]); }
+"{"                       { return(yytext[0]); }
+"}"                       { return(yytext[0]); }
+"."                       { return(yytext[0]); }
 
-{DIGIT} {printf("[%s] -> DIGIT\n", yytext);}
-{IDENTIFIER} {printf("[%s] -> IDENTIFICADOR\n", yytext);}
-{SPACE} {printf("[%s] -> WHITESPACE\n", yytext);}
-{OPENP} {printf("[%s] -> OPEN PARENTHESES\n", yytext);}
-{CLOSEP} {printf("[%s] -> CLOSE PARENTHESES\n", yytext);}
-{OPENB} {printf("[%s] -> OPEN BRACE\n", yytext);}
-{CLOSEB} {printf("[%s] -> CLOSE BRACE\n", yytext);}
-{OPENBKT} {printf("[%s] -> OPEN BRACKET\n", yytext);}
-{CLOSEBKT} {printf("[%s] -> CLOSE BRACKET\n", yytext);}
-"," { printf("[%s] -> COMMA\n", yytext); }
-\n  { }
-.   { printf("[%s] -> INVALID IDENTIFIER\n", yytext); }
+"="                       { return(ASSIGN); }
+"=="                      { return(EQUAL); }
+"!="                      { return(DIFFERENCE); }
+">"                       { return(GREATER_THAN); }
+">="                      { return(GREATER_THAN_OR_EQUAL); }
+"<"                       { return(LESS_THAN); }
+"<="                      { return(LESS_THAN_OR_EQUAL); }
+"+"                       { return(SUM); }
+"++"                      { return(INCREMENT); }
+"-"                       { return(SUBTRACTION); }
+"--"                      { return(DECREMENT); }
+"*"                       { return(MULTIPLICATION); }
+"**"                      { return(POWER); }
+"/"                       { return(DIVISION); }
+"%"                       { return(REST); }
+
+"int"                     { yylval.type = strdup("int"); 
+                            return TYPE; }
+"bool"                    { yylval.type = strdup("bool"); 
+                            return TYPE; }
+"float"                   { yylval.type = strdup("float"); 
+                            return TYPE; }
+"char"                    { yylval.type = strdup("char"); 
+                            return TYPE; }
+"string"                  { yylval.type = strdup("string"); 
+                            return TYPE; }
+"array"                   { yylval.type = strdup("array"); 
+                            return TYPE; }
+"object"                  { yylval.type = strdup("object"); 
+                            return TYPE; }
+"void"                    { yylval.type = strdup("void"); 
+                            return TYPE; }
+
+"true"                    { yylval.bValue = true;
+                            return LITERAL; }
+"false"                   { yylval.bValue = false;
+                            return LITERAL; }
+\"{CHAR}\"                { yylval.cValue = yytext[1];
+                            return LITERAL; }
+\"{STRING}\"              { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2); ;
+                            return LITERAL; }
+{DIGIT}                   { yylval.iValue = atoi(yytext); 
+                            return LITERAL; }
+{IDENTIFIER}              { yylval.id = strdup(yytext); 
+                            return ID; }
+
+int({IDENTIFIER})         { return(PARSEINT); }
+float({IDENTIFIER})       { return(PARSEFLOAT); }
+char({IDENTIFIER})        { return(PARSECHAR); }
+string({IDENTIFIER})      { return(PARSESTRING); }
+
+.                         { yyerror("Invalid character."); }
 
 %%
 
 #ifndef yywrap
 
-int yywrap (void){
-    return 1;
+int yywrap(void) {
+  return 1;
 }
 
 #endif
