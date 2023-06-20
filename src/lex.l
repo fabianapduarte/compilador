@@ -93,11 +93,6 @@ PRINT[print\(\s*[\w\s"]*\s*\)]
 {IDENTIFIER}              { yylval.id = strdup(yytext); 
                             return ID; }
 
-int({IDENTIFIER})         { return(PARSEINT); }
-float({IDENTIFIER})       { return(PARSEFLOAT); }
-char({IDENTIFIER})        { return(PARSECHAR); }
-string({IDENTIFIER})      { return(PARSESTRING); }
-
 .                         { yyerror("Invalid character."); }
 
 %%
