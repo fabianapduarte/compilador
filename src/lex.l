@@ -7,8 +7,8 @@
 %option yylineno
 
 DIGIT[0-9]+
-CHAR[a-zA-Z0-9]
-STRING[a-zA-Z0-9]+
+CHAR\'[a-zA-Z0-9\s\-\_]?\'
+STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
 PRINT[print\(\s*[\w\s"]*\s*\)]
 

@@ -15,20 +15,20 @@
   bool   bValue; 	/* bool value */
 	char   cValue; 	/* char value */
 	char * sValue;  /* string value */
-  char * type;    /* string value */
+  char * type;    /* type value */
   char * id;      /* identfier */
 };
 
 %token <id> ID
 %token <type> TYPE
-%token FUNC WHILE DO IF ELIF ELSE SWITCH CASE FOR BREAK CONTINUE PRINT RETURN GLOBAL CONST DEFAULT OR AND NOT  ASSIGN EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST PARSEINT PARSEFLOAT PARSECHAR PARSESTRING LITERAL
+%token <sValue> FUNC WHILE DO IF ELIF ELSE SWITCH CASE FOR BREAK CONTINUE PRINT RETURN GLOBAL CONST DEFAULT OR AND NOT ASSIGN EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST PARSEINT PARSEFLOAT PARSECHAR PARSESTRING LITERAL
 
 %type <sValue> body
 %type <sValue> function
 %type <sValue> subpgrm
-%type <sValue> subpgrms args args_aux assign
+%type <sValue> subpgrms args args_aux assign expression decl_var binary_op term factor expr_incr_decr conditional conditionals if_else if_elif if_then switch cases case loops loop for while do_while
 
-%start programa
+%start program
 
 %%
 program : subpgrms body {printf("%s%s\n", $1, $2);};
@@ -39,9 +39,10 @@ subpgrms : {$$ = strdup("");}
 
 subpgrm : function {$$ = $1;} | decl_var | assign | conditionals | loops;
 
-decl_var : TYPE ID ASSIGN expression ;
+decl_var : TYPE ID ASSIGN expression { printf("%s %s = %s", $1, $2, $4); }
+         ;
 
-function : TYPE FUNC ID '(' args ')' '{' body '}' {printf("FUNC %s(%s) : %s %s", $2, $4, $7, $8);}  
+function : TYPE FUNC ID '(' args ')' '{' body '}' {printf("%s FUNC %s(%s)", $1, $3, $5);}  
          ;
 
 args : {$$ = strdup("");}
@@ -52,7 +53,7 @@ args_aux : TYPE ID {printf("%s %s", $1, $2);}
          | TYPE ID ',' args_aux {printf("%s %s; %s", $1, $2, $4);}
          ;                     
 
-body : ;
+body : {$$ = strdup("");} ;
 
 assign : TYPE ID ASSIGN expression ;
 
