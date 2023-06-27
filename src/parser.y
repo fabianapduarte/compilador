@@ -2,6 +2,7 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
+  #include <math.h>
 
   int yylex(void);
   extern int yylineno;
@@ -16,31 +17,42 @@
 	char   cValue; 	/* char value */
 	char * sValue;  /* string value */
   char * type;    /* type value */
-  char * id;      /* identfier */
 };
 
-%token <id> ID
 %token <type> TYPE
-%token <sValue> FUNC WHILE DO IF ELIF ELSE SWITCH CASE FOR BREAK CONTINUE PRINT RETURN GLOBAL CONST DEFAULT OR AND NOT ASSIGN EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST PARSEINT PARSEFLOAT PARSECHAR PARSESTRING LITERAL
+%token <sValue> ID GLOBAL CONST ASSIGN LITERAL
+%token <sValue> FOR WHILE DO IF ELIF ELSE SWITCH CASE DEFAULT BREAK CONTINUE
+%token <sValue> FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
+%token <sValue> OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
+%token <sValue> SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
 %type <sValue> body
 %type <sValue> function
-%type <sValue> subpgrm
-%type <sValue> subpgrms args args_aux assign expression decl_var binary_op term factor expr_incr_decr conditional conditionals if_else if_elif if_then switch cases case loops loop for while do_while
+%type <sValue> subpgrm subpgrms args args_aux
+%type <sValue> assign decl_var decl_const decl_global expr term factor expr_incr_decr
+%type <sValue> loop for do_while while
+/* %type <sValue> conditional if_else if_elif if_then switch cases case */
 
 %start program
 
 %%
+
 program : subpgrms body {printf("%s%s\n", $1, $2);};
 
 subpgrms : {$$ = strdup("");} 
-         | subpgrm subpgrms {printf("%s\n%s", $1, $2);} 
+         | subpgrm body {printf("%s\n%s", $1, $2);} 
          ;
 
-subpgrm : function {$$ = $1;} | decl_var | assign | conditionals | loops;
+subpgrm : function {$$ = $1;} | decl_var | decl_const | decl_global | assign | loop;
 
-decl_var : TYPE ID ASSIGN expression { printf("%s %s = %s", $1, $2, $4); }
-         ;
+decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4); }
+         ; 
+
+decl_const : CONST TYPE ID ASSIGN expr { printf("const %s %s = %s", $2, $3, $5); }
+           ;
+
+decl_global : GLOBAL TYPE ID ASSIGN expr { printf("global %s %s = %s", $2, $3, $5); }
+            ;
 
 function : TYPE FUNC ID '(' args ')' '{' body '}' {printf("%s FUNC %s(%s)", $1, $3, $5);}  
          ;
@@ -49,49 +61,80 @@ args : {$$ = strdup("");}
      | args_aux {$$ = $1;}
      ;
 
-args_aux : TYPE ID {printf("%s %s", $1, $2);}
-         | TYPE ID ',' args_aux {printf("%s %s; %s", $1, $2, $4);}
-         ;                     
+args_aux : TYPE ID { printf("%s %s", $1, $2); }
+         | TYPE ID ',' args_aux { printf("%s %s; %s", $1, $2, $4); }
+         ;
 
-body : {$$ = strdup("");} ;
+body : { $$ = strdup(""); }
+     ;
 
-assign : TYPE ID ASSIGN expression ;
+assign : ID ASSIGN expr { $$ = $3; }
+       ;
 
-expression : ID | LITERAL | binary_op ;
+expr : term SUM expr { $$ = $1 + $3; }
+     | term SUBTRACTION expr { $$ = $1 - $3; }
+     | term { $$ = $1; }
+     ;
 
-binary_op : binary_op SUM term | binary_op SUBTRACTION term | term ;
+term : factor MULTIPLICATION term { $$ = $1 * $3; }
+     | factor DIVISION term { $$ = $1 / $3; }
+     | factor REST term { $$ = $1 % $3; }
+     | factor POWER term { $$ = pow($1, $3); }
+     | factor { $$ = $1; }
+     ;
 
-term : term MULTIPLICATION factor | term DIVISION factor | factor;
+factor : '(' expr ')' { $$ = ($2); }
+       | expr_incr_decr { $$ = $1; }
+       | ID { $$ = $1; }
+       | LITERAL { $$ = $1; }
+       ;
 
-factor : '(' expression ')' | expr_incr_decr | ID;
+expr_incr_decr : ID INCREMENT { $$ = $1++; }
+               | ID DECREMENT { $$ = $1--; } 
+               | INCREMENT ID { $$ = ++$2; }
+               | DECREMENT ID { $$ = --$2; }
+               ;
 
-expr_incr_decr : ID INCREMENT | ID DECREMENT | INCREMENT ID | DECREMENT ID;
+/* conditionals : conditional | conditional conditionals; */
 
-conditionals : conditional | conditional conditionals;
+/* conditional : if_else { $$ = $1; }
+            | if_elif { $$ = $1; }
+            | if_then { $$ = $1; }
+            | switch { $$ = $1; }
+            ;
 
-conditional : if_else | if_elif | if_then | switch;
+if_else : if_then ELSE '{' subpgrms '}' { printf("%s ELSE {}", $1) }
+        ;
 
-if_else : if_then ELSE '{' subpgrms '}';
+if_elif : if_then ELIF '(' expr ')' '{' subpgrms '}' ELSE '{' subpgrms '}' { printf("%s ELIF (%s) ELSE {}", $1, $4) }
+        | 
+        ;
 
-if_elif : if_then ELIF '(' expression ')' '{' subpgrms '}' ;
+if_then : IF '(' expr ')' '{' subpgrms '}' { printf("IF (%s) {}", $3) }
+        ;
 
-if_then : IF '(' expression ')' '{' subpgrms '}';
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' subpgrms BREAK '}'
+       ;
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' subpgrms BREAK '}' ;
+cases : case | case cases
+      ;
 
-cases: case | case cases;
+case : CASE ID ':' subpgrms BREAK */
+     ;
 
-case : CASE ID ':' subpgrms BREAK;
+loop : for { $$ = $1; }
+     | while { $$ = $1; }
+     | do_while { $$ = $1; }
+     ;
 
-loops : loop | loop loops ;
+for : FOR '(' decl_var ';' expr ';' expr_incr_decr ')' '{' subpgrms '}' { printf("FOR (%s; %s; %s)", $3, $5, $7); }
+    ;
 
-loop : for | while | do_while ;
+while : WHILE '(' expr ')' '{' subpgrms '}' { printf("WHILE (%s) {}", $3); }
+      ;
 
-for : FOR '(' decl_var ';' expression ';' expr_incr_decr ')' subpgrms;
-
-while : WHILE '(' expression ')' '{' subpgrms '}';
-
-do_while : DO '{' subpgrms '}' WHILE '(' expression ')';
+do_while : DO '{' subpgrms '}' WHILE '(' expr ')' { printf("DO {} WHILE (%s)", $7); }
+         ;
 
 %%
 

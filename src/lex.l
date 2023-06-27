@@ -90,7 +90,7 @@ PRINT[print\(\s*[\w\s"]*\s*\)]
                             return LITERAL; }
 {DIGIT}                   { yylval.iValue = atoi(yytext); 
                             return LITERAL; }
-{IDENTIFIER}              { yylval.id = strdup(yytext); 
+{IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
 
 .                         { yyerror("Invalid character."); }
