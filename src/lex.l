@@ -11,6 +11,8 @@ CHAR\'[a-zA-Z0-9\s\-\_]?\'
 STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
 PRINT[print\(\s*[\w\s"]*\s*\)]
+ARRAY_STRING\[((\s)?\"([a-zA-Z0-9]|(\s)|\-|\_)* \"(\s)?)(\,(\s)?\"([a-zA-Z0-9]|(\s)|\-|\_)* \"(\s)?)*\]
+ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
 
 %%
 
@@ -86,7 +88,7 @@ PRINT[print\(\s*[\w\s"]*\s*\)]
                             return LITERAL; }
 \"{CHAR}\"                { yylval.cValue = yytext[1];
                             return LITERAL; }
-\"{STRING}\"              { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2); ;
+\"{STRING}\"              { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2);
                             return LITERAL; }
 {DIGIT}                   { yylval.iValue = atoi(yytext); 
                             return LITERAL; }
