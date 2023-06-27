@@ -33,3 +33,8 @@ $ ./program < ../inputs/mergeSort.txt
 - Fabiana Pereira
 - João Dantas
 - Samuel Costa
+
+
+bruno.moura.703@A309-05L:~/Downloads/compilador/src$ flex lex.l
+bruno.moura.703@A309-05L:~/Downloads/compilador/src$ yacc -d -v parser.y 
+bruno.moura.703@A309-05L:~/Downloads/compilador/src$ gcc y.tab.c lex.yy.c -o compilador

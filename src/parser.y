@@ -3,6 +3,8 @@
   #include <stdlib.h>
   #include <string.h>
   #include <math.h>
+  #include <stdbool.h>
+
 
   int yylex(void);
   extern int yylineno;
@@ -11,11 +13,11 @@
 %}
 
 %union {
-	int    iValue; 	/* integer value */
-  float  fValue; 	/* float value */
-  bool   bValue; 	/* bool value */
-	char   cValue; 	/* char value */
-	char * sValue;  /* string value */
+  int iValue; 	/* integer value */
+  float fValue; 	/* float value */
+  int bValue; 	/* bool value */
+  char cValue; 	/* char value */
+  char * sValue;  /* string value */
   char * type;    /* type value */
 };
 
@@ -32,6 +34,8 @@
 %type <sValue> assign decl_var decl_const decl_global expr term factor expr_incr_decr
 %type <sValue> loop for do_while while
 /* %type <sValue> conditional if_else if_elif if_then switch cases case */
+
+
 
 %start program
 

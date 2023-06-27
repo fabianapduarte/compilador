@@ -2,6 +2,7 @@
 	#include <stdio.h>
   #include "y.tab.h"
   #include <string.h>
+  extern int yyerror (char *msg); 
 %}
 
 %option yylineno
@@ -82,9 +83,9 @@ ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
 "void"                    { yylval.type = strdup("void"); 
                             return TYPE; }
 
-"true"                    { yylval.bValue = true;
+"true"                    { yylval.bValue = 1;
                             return LITERAL; }
-"false"                   { yylval.bValue = false;
+"false"                   { yylval.bValue = 0;
                             return LITERAL; }
 \"{CHAR}\"                { yylval.cValue = yytext[1];
                             return LITERAL; }
