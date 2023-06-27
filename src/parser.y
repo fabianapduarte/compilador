@@ -33,7 +33,7 @@
 %type <sValue> subpgrm subpgrms args args_aux
 %type <sValue> assign decl_var decl_const decl_global expr term factor expr_incr_decr
 %type <sValue> loop for do_while while
-/* %type <sValue> conditional if_else if_elif if_then switch cases case */
+/*%type <sValue> conditional else elif_list if_elif if_then switch cases case*/
 
 
 
@@ -99,32 +99,37 @@ expr_incr_decr : ID INCREMENT { $$ = $1++; }
                | DECREMENT ID { $$ = --$2; }
                ;
 
-/* conditionals : conditional | conditional conditionals; */
-
-/* conditional : if_else { $$ = $1; }
-            | if_elif { $$ = $1; }
-            | if_then { $$ = $1; }
+/*conditional : if_then { $$ = $1; }
+            | if_then else { $$ = $1; }
+            | if_then elif_list else { $$ = $1; }
             | switch { $$ = $1; }
             ;
 
-if_else : if_then ELSE '{' subpgrms '}' { printf("%s ELSE {}", $1) }
-        ;
+else : ELSE '{' subpgrms '}' { printf("\nELSE {}", $1); }
+     ;
+
+elif_list : { $$ = $1; }
+          | elif 
+          ;
+
+elif : ELIF '(' expr ')' '{' subpgrms '}' { printf("%s ELIF (%s) ELSE {}", $1, $4); }
+     ;
 
 if_elif : if_then ELIF '(' expr ')' '{' subpgrms '}' ELSE '{' subpgrms '}' { printf("%s ELIF (%s) ELSE {}", $1, $4) }
         | 
         ;
 
 if_then : IF '(' expr ')' '{' subpgrms '}' { printf("IF (%s) {}", $3) }
-        ;
+        ;*/
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' subpgrms BREAK '}'
+/*switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' subpgrms BREAK '}'
        ;
 
 cases : case | case cases
       ;
 
-case : CASE ID ':' subpgrms BREAK */
-     ;
+case : CASE ID ':' subpgrms BREAK
+     ;*/
 
 loop : for { $$ = $1; }
      | while { $$ = $1; }
