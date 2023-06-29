@@ -118,7 +118,7 @@ conditional : if_then { $$ = $1; }
 else : ELSE '{' stmts '}' { printf("\nELSE {}", $1); }
      ;
 
-elif_list : { $$ = NULL; }
+elif_list : elif { $$ = $1; }
           | elif elif_list { $$ = $1; }
           ;
 
