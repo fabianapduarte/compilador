@@ -16,12 +16,12 @@ Em seguida, execute os seguintes passos:
 
 $ cd src
 $ flex lex.l
-$ yacc -d parser.y
-$ gcc -o analisadorLexico lex.yy.c
+$ yacc -d -v parser.y
+$ gcc y.tab.c lex.yy.c -o compilador
 
 # Para executar com as entradas
-$ ./program < ../inputs/olaMundo.txt
-$ ./program < ../inputs/mergeSort.txt
+$ ./compilador < ../inputs/olaMundo.txt
+$ ./compilador < ../inputs/mergeSort.txt
 
 ```
 
@@ -33,8 +33,3 @@ $ ./program < ../inputs/mergeSort.txt
 - Fabiana Pereira
 - João Dantas
 - Samuel Costa
-
-
-bruno.moura.703@A309-05L:~/Downloads/compilador/src$ flex lex.l
-bruno.moura.703@A309-05L:~/Downloads/compilador/src$ yacc -d -v parser.y 
-bruno.moura.703@A309-05L:~/Downloads/compilador/src$ gcc y.tab.c lex.yy.c -o compilador
