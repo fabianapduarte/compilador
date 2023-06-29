@@ -2,6 +2,7 @@
 	#include <stdio.h>
   #include "y.tab.h"
   #include <string.h>
+
   extern int yyerror (char *msg); 
 %}
 
@@ -17,7 +18,8 @@ ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
 
 %%
 
-[ \t\n]                   ;
+[ \t]                     ;
+\n                        { yylineno++ }
 
 "if"                      { return(IF); }
 "else"                    { return(ELSE); }
@@ -66,33 +68,33 @@ ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
 "/"                       { return(DIVISION); }
 "%"                       { return(REST); }
 
-"int"                     { yylval.type = strdup("int"); 
+"int"                     { yylval.sValue = strdup("int"); 
                             return TYPE; }
-"bool"                    { yylval.type = strdup("bool"); 
+"bool"                    { yylval.sValue = strdup("bool"); 
                             return TYPE; }
-"float"                   { yylval.type = strdup("float"); 
+"float"                   { yylval.sValue = strdup("float"); 
                             return TYPE; }
-"char"                    { yylval.type = strdup("char"); 
+"char"                    { yylval.sValue = strdup("char"); 
                             return TYPE; }
-"string"                  { yylval.type = strdup("string"); 
+"string"                  { yylval.sValue = strdup("string"); 
                             return TYPE; }
-"array"                   { yylval.type = strdup("array"); 
+"array"                   { yylval.sValue = strdup("array"); 
                             return TYPE; }
-"object"                  { yylval.type = strdup("object"); 
+"object"                  { yylval.sValue = strdup("object"); 
                             return TYPE; }
-"void"                    { yylval.type = strdup("void"); 
+"void"                    { yylval.sValue = strdup("void"); 
                             return TYPE; }
 
-"true"                    { yylval.bValue = 1;
-                            return LITERAL; }
-"false"                   { yylval.bValue = 0;
-                            return LITERAL; }
-\"{CHAR}\"                { yylval.cValue = yytext[1];
-                            return LITERAL; }
-\"{STRING}\"              { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2);
-                            return LITERAL; }
-{DIGIT}                   { yylval.iValue = atoi(yytext); 
-                            return LITERAL; }
+"true"                    { yylval.sValue = strdup(yytext);
+                            return BOOL_LIT; }
+"false"                   { yylval.sValue = strdup(yytext);
+                            return BOOL_LIT; }
+\"{CHAR}\"                { yylval.sValue = strdup(yytext);
+                            return CHAR_LIT; }
+\"{STRING}\"              { yylval.sValue = strdup(yytext);
+                            return STR_LIT; }
+{DIGIT}                   { yylval.sValue = strdup(yytext); 
+                            return INT_LIT; }
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
 

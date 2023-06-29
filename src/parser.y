@@ -4,33 +4,31 @@
   #include <string.h>
   #include <math.h>
   #include <stdbool.h>
+  #include "./lib/record.h"
 
   int yylex(void);
+  int yyerror(char *s);
   extern int yylineno;
   extern char * yytext;
 %}
 
 %union {
-  int iValue; 	/* integer value */
-  float fValue; 	/* float value */
-  int bValue; 	/* bool value */
-  char cValue; 	/* char value */
-  char * sValue;  /* string value */
-  char * type;    /* type value */
+  char * sValue;
+  struct record * rec;
 };
 
-%token <type> TYPE
-%token <sValue> ID GLOBAL CONST ASSIGN LITERAL
-%token <sValue> FOR WHILE DO IF ELIF ELSE SWITCH CASE DEFAULT BREAK CONTINUE
-%token <sValue> FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
-%token <sValue> OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
-%token <sValue> SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
+%token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_INT CHAR_LIT OBJ_LIT ARR_LIT
 
-%type <sValue> function
-%type <sValue> stmt stmts args args_aux
-%type <sValue> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr
-%type <sValue> loop for do_while while
-%type <sValue> conditional else elif_list elif if_then switch cases case
+%token GLOBAL CONST ASSIGN
+%token FOR WHILE DO IF ELIF ELSE SWITCH CASE DEFAULT BREAK CONTINUE
+%token FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
+%token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
+%token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
+
+%type <rec> function stmt stmts args args_aux
+%type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr
+%type <rec> loop for do_while while
+%type <rec> conditional else elif_list elif if_then switch cases case
 
 %start program
 
@@ -100,7 +98,11 @@ term : factor MULTIPLICATION term { $$ = $1 * $3; }
 factor : '(' expr ')' { $$ = ($2); }
        | oper_incr_decr { $$ = $1; }
        | ID { $$ = $1; }
-       | LITERAL { $$ = $1; }
+       | BOOL_LIT { $$ = $1; }
+       | INT_LIT { $$ = $1; }
+       | FLOAT_INT { $$ = $1; }
+       | STR_LIT { $$ = $1; }
+       | CHAR_LIT { $$ = $1; }
        ;
 
 oper_incr_decr : ID INCREMENT { $$ = $1++; }
