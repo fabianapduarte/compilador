@@ -2,3 +2,4 @@
 *.tab.c
 *.tab.h
 y.tab.h.gch
+*.output
