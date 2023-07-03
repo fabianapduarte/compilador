@@ -9,17 +9,27 @@
 %option yylineno
 
 DIGIT[0-9]+
+FLOAT{DIGIT}\.{DIGIT}
+
 CHAR\'[a-zA-Z0-9\s\-\_]?\'
 STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
 PRINT[print\(\s*[\w\s"]*\s*\)]
-ARRAY_STRING\[((\s)?\"([a-zA-Z0-9]|(\s)|\-|\_)* \"(\s)?)(\,(\s)?\"([a-zA-Z0-9]|(\s)|\-|\_)* \"(\s)?)*\]
-ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
+
+TRUE\"true\"
+FALSE\"false\"
+OBJECT\"object\"
+
+ARRAY_INT\[(\s)?{DIGIT}((\s)?\,(\s)?{DIGIT}*(\s)?\]
+ARRAY_BOOL\[(\s)?({TRUE}|{FALSE})(\s)?\,(\s)?({TRUE}|{FALSE})(\s)?\]
+ARRAY_FLOAT\[(\s)?{FLOAT}((\s)?\,(\s)?{FLOAT}*(\s)?\]
+ARRAY_CHAR\[((\s)?{CHAR}(\s)?)(\,(\s)?{CHAR}(\s)?)*\]
+ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
 
 %%
 
 [ \t]                     ;
-\n                        { yylineno++ }
+\n                        { yylineno++; }
 
 "if"                      { return(IF); }
 "else"                    { return(ELSE); }
@@ -80,18 +90,18 @@ ARRAY_INT\[(\s)?([0-9]|(\s)|\-|\_)* (\,(\s)?([0-9]|\-|\_)+(\s)?)*\]
                             return TYPE; }
 "array"                   { yylval.sValue = strdup("array"); 
                             return TYPE; }
-"object"                  { yylval.sValue = strdup("object"); 
+{OBJECT}                  { yylval.sValue = strdup("object"); 
                             return TYPE; }
 "void"                    { yylval.sValue = strdup("void"); 
                             return TYPE; }
 
-"true"                    { yylval.sValue = strdup(yytext);
+{TRUE}                    { yylval.sValue = strdup(yytext);
                             return BOOL_LIT; }
-"false"                   { yylval.sValue = strdup(yytext);
+{FALSE}                   { yylval.sValue = strdup(yytext);
                             return BOOL_LIT; }
-\"{CHAR}\"                { yylval.sValue = strdup(yytext);
+{CHAR}                    { yylval.sValue = strdup(yytext);
                             return CHAR_LIT; }
-\"{STRING}\"              { yylval.sValue = strdup(yytext);
+{STRING}                  { yylval.sValue = strdup(yytext);
                             return STR_LIT; }
 {DIGIT}                   { yylval.sValue = strdup(yytext); 
                             return INT_LIT; }
@@ -109,9 +119,3 @@ int yywrap(void) {
 }
 
 #endif
-
-int main() {
-  yylex();
-
-  return 0;
-}
