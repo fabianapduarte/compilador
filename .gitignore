@@ -3,3 +3,4 @@
 *.tab.h
 y.tab.h.gch
 *.output
+/src/compiler

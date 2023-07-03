@@ -1,13 +1,13 @@
 all: compilador
 
-compilador: lex.yy.c y.tab.c 
-	gcc lex.yy.c y.tab.c -o compiler
+compilador: src/lex.yy.c src/y.tab.c 
+	gcc src/lex.yy.c src/y.tab.c -o src/compilador -lm
 
-lex.yy.c: ./src/lex.l
-	flex ./src/lex.l
+src/lex.yy.c: src/lex.l
+	flex -o src/lex.yy.c src/lex.l
 
-y.tab.c: ./src/parser.y  
-	yacc ./src/parser.y -d -v
+src/y.tab.c: src/parser.y  
+	yacc -o src/y.tab.c -d -v src/parser.y
 
 clean:
-	rm -rf lex.yy.c y.tab.* compiler ./src/output.txt ./src/y.output
+	rm -rf src/lex.yy.c src/y.tab.* src/compilador src/output.txt src/y.output
