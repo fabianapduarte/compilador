@@ -20,24 +20,32 @@
 %token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_INT CHAR_LIT OBJ_LIT ARR_LIT
 
 %token GLOBAL CONST ASSIGN
-%token FOR WHILE DO IF SWITCH CASE DEFAULT BREAK CONTINUE
-%token <sValue> ELIF ELSE 
+%token FOR WHILE DO IF CONTINUE
+%token ELIF ELSE SWITCH CASE DEFAULT BREAK
 %token FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
 %token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <rec> function stmt stmts args args_aux
+%type <rec> stmts 
+/* %type <rec> function stmt stmts args args_aux
 %type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr atr_list
 %type <rec> loop for do_while while
-%type <rec> conditional else elif_list elif if_then switch cases case
+%type <rec> conditional else elif_list elif if_then switch cases case */
 
 %start program
 
 %%
 
-program : stmts {printf("%s\n", $1->code);};
+program : stmts {printf("%s\n", $1->code);
+     freeRecord($1);
+};
 
-stmts : {$$->code = strdup("");} 
+stmts : {$$ = createRecord("null program", "");}
+      | STR_LIT {$$ = createRecord($1, "string"); 
+      free($1);}
+      ;
+
+/*stmts : {$$->code = strdup("");} 
       | stmt stmts {printf("%s\n%s", $1->code, $2->code);} 
       ;
       
@@ -71,7 +79,7 @@ assign : ID ASSIGN expr { $$ = $3; }
          | elements COMMA INTEGER
          ;*/
 
-expr : NOT expr_eq { $$->bValue = !$2; }
+/*expr : NOT expr_eq { $$->bValue = !$2; }
      | expr_eq OR expr { $$->bValue = $1 || $3; }
      | expr_eq AND expr { $$->bValue = $1 && $3; }
      | expr_eq
@@ -98,7 +106,7 @@ term : factor MULTIPLICATION term { $$->iValue = atoi($1->code) * atoi($3->code)
      | factor DIVISION term { $$->iValue = atoi($1->code) / atoi($3->code); }
      | factor REST term { $$->iValue = atoi($1->code) % atoi($3->code); }
      /*Ta com erro de tipo aqui nessa potencia, to arredondando pra int por ora*/
-     | factor POWER term { $$->dValue = pow(atof($1->code), atof ($3->code)); }
+     /* | factor POWER term { $$->dValue = pow(atof($1->code), atof ($3->code)); }
      | factor { $$->iValue = $1->iValue; }
      ;
 
@@ -131,19 +139,19 @@ elif_list : elif { $$ = $1; }
           | elif elif_list { $$ = $1; }
           ;
 
-elif : ELIF '(' expr ')' '{' stmts '}' { printf("%s ELIF (%s) ELSE {}", $1, $3->code); }
+elif : ELIF '(' expr ')' '{' stmts '}' { printf("ELIF (%s) ELSE {}", $3->code); }
      ;
 
 if_then : IF '(' expr ')' '{' stmts '}' { printf("IF (%s) {}", $3->code); }
         ;
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}'
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { printf("switch") ;}
        ;
 
-cases : case | case cases
+cases : case | case cases { printf("case");}
       ;
 
-case : CASE ID ':' stmts BREAK
+case : CASE ID ':' stmts BREAK {printf("case id");}
      ;
 
 loop : for { $$ = $1; }
@@ -158,7 +166,7 @@ while : WHILE '(' expr ')' '{' stmts '}' { printf("WHILE (%s) {}", $3->code); }
       ;
 
 do_while : DO '{' stmts '}' WHILE '(' expr ')' { printf("DO {} WHILE (%s)", $7->code); }
-         ;
+         ; */ 
 
 %%
 

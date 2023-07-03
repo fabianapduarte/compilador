@@ -1,7 +1,7 @@
 all: compilador
 
 compilador: src/lex.yy.c src/y.tab.c 
-	gcc src/lex.yy.c src/y.tab.c -o src/compilador -lm
+	gcc src/lex.yy.c src/y.tab.c src/lib/record.c -o src/compilador -lm
 
 src/lex.yy.c: src/lex.l
 	flex -o src/lex.yy.c src/lex.l
