@@ -14,6 +14,16 @@ Em seguida, execute os seguintes passos:
 
 ```bash
 
+$ make
+
+# Para executar com as entradas
+$ make run in=<nome_do_aquivo>.txt
+```
+
+Ou alternativamente:
+
+```bash
+
 $ cd src
 $ flex lex.l
 $ yacc -d -v parser.y

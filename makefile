@@ -11,3 +11,6 @@ src/y.tab.c: src/parser.y
 
 clean:
 	rm -rf src/lex.yy.c src/y.tab.* src/compilador src/output.txt src/y.output
+
+run:
+	./src/compilador < ./inputs/$(in)
