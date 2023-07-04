@@ -14,7 +14,6 @@ FLOAT{DIGIT}\.{DIGIT}
 CHAR\'[a-zA-Z0-9\s\-\_]?\'
 STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
-PRINT[print\(\s*[\w\s"]*\s*\)]
 
 TRUE\"true\"
 FALSE\"false\"
@@ -41,7 +40,7 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
 "while"                   { return(WHILE); }
 "break"                   { return(BREAK); }
 "continue"                { return(CONTINUE); }
-{PRINT}                   { return(PRINT); }
+"print"                   { return(PRINT); }
 "func"                    { return(FUNC); }
 "return"                  { return(RETURN); }
 "global"                  { return(GLOBAL); }

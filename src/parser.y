@@ -10,6 +10,8 @@
   int yyerror(char *s);
   extern int yylineno;
   extern char * yytext;
+
+  char * cat(char *, char *, char *, char *, char *);
 %}
 
 %union {
@@ -17,7 +19,7 @@
   struct record * rec;
 };
 
-%token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_INT CHAR_LIT OBJ_LIT ARR_LIT
+%token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_INT CHAR_LIT
 
 %token GLOBAL CONST ASSIGN
 %token FOR WHILE DO IF CONTINUE
@@ -26,57 +28,94 @@
 %token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <rec> stmts 
-/* %type <rec> function stmt stmts args args_aux
-%type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr atr_list
-%type <rec> loop for do_while while
+%type <rec> program stmt stmts assign print
+/* %type <rec> function stmt stmts args args_aux 
+%type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr atr_list */
+/*%type <rec> loop for do_while while
 %type <rec> conditional else elif_list elif if_then switch cases case */
 
 %start program
 
 %%
 
-program : stmts {printf("%s\n", $1->code);
-     freeRecord($1);
-};
+program : stmts { printf("%d", $1->iValue);
+                  freeRecord($1);
+                }
+        ;
 
-stmts : {$$ = createRecord("null program", "");}
-      | STR_LIT {$$ = createRecord($1, "string"); 
-      free($1);}
-      ;
-
-/*stmts : {$$->code = strdup("");} 
-      | stmt stmts {printf("%s\n%s", $1->code, $2->code);} 
+stmts :            { $$ = createRecord("", VOID); }
+      | stmt stmts { $$ = createInt($1->iValue); }
       ;
       
-stmt : function {$$ = $1;} | decl_var | decl_const | decl_global | assign | loop | conditional;
+stmt : /*function {$$ = createString($1);}*/
+     /*decl_var {$$;}
+     | decl_const 
+     | decl_global*/
+      assign { $$->iValue = $1->iValue; }
+     | print { $$ = $1; }
+     /*| loop 
+     | conditional*/
+     ;
 
-decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
+print : PRINT '(' ID ')'           { printf("%s\n", $3); }
+      | PRINT '(' '"' STR_LIT '"' ')'      { printf("%s\n", $4);
+                                     /*char * code = cat("print", "(")*/
+                                   }
+      | PRINT '(' CHAR_LIT ')'     { printf("%s\n", $3); }
+      | PRINT '(' INT_LIT ')'      { printf("%s\n", $3); }
+      | PRINT '(' FLOAT_INT ')'    { printf("%s\n", $3); }
+      | PRINT '(' BOOL_LIT ')'     { printf("%s\n", $3); }
+      ;
+
+/*decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
          ; 
 
 decl_const : CONST TYPE ID ASSIGN expr { printf("const %s %s = %s", $2, $3, $5->code); }
            ;
 
 decl_global : GLOBAL TYPE ID ASSIGN expr { printf("global %s %s = %s", $2, $3, $5->code); }
-            ;
+            ;*/
 
-function : TYPE FUNC ID '(' args ')' '{' stmts '}' {printf("%s FUNC %s(%s)", $1, $3, $5->code);}  
-         ;
+/* function : TYPE FUNC ID '(' args ')' '{' stmts '}'
+{
+    // Ação do analisador semântico
 
-args : {$$->code = strdup("");}
+    // Verificar a existência e declaração da função
+    if (!functionExists($3)) {
+        // Erro: Função não declarada
+        printf("Erro: Função '%s' não declarada\n", $3);
+        YYERROR;
+    }
+
+    // Verificar os tipos dos argumentos
+    if (!checkArgumentTypes($3, $5)) {
+        // Erro: Tipos inválidos dos argumentos
+        printf("Erro: Tipos inválidos dos argumentos na função '%s'\n", $3);
+        YYERROR;
+    }
+
+    // Realizar outras verificações semânticas e ações necessárias
+
+    // Se necessário, você pode retornar algum valor específico associado à regra
+    $$ = createFunctionNode($3, $2, $5, $8);
+    $$ = createRecord();
+}  
+; */
+
+/* args : {$$->code = strdup("");}
      | args_aux {$$ = $1;}
      ;
 
 args_aux : TYPE ID { printf("%s %s", $1, $2); }
-         | TYPE ID ',' args_aux { printf("%s %s; %s", $1, $2, $4->code); }
-         ;
+         | TYPE ID ',' args_aux { printf("%s %s; %s", $1, $2, $4->sValue); }
+         ; */
 
-assign : ID ASSIGN expr { $$ = $3; }
-       /*| TYPE ID ASSIGN { atr_list }*/
+assign : /*ID ASSIGN expr { $$ = $3; }*/
+       TYPE ID ASSIGN INT_LIT { $$ = createInt(atoi($4)); free($4); } 
        ;
 
 /*atr_list : TYPE 
-         | elements COMMA INTEGER
+         | TOKEN ',' INT_LIT 
          ;*/
 
 /*expr : NOT expr_eq { $$->bValue = !$2; }
@@ -106,11 +145,11 @@ term : factor MULTIPLICATION term { $$->iValue = atoi($1->code) * atoi($3->code)
      | factor DIVISION term { $$->iValue = atoi($1->code) / atoi($3->code); }
      | factor REST term { $$->iValue = atoi($1->code) % atoi($3->code); }
      /*Ta com erro de tipo aqui nessa potencia, to arredondando pra int por ora*/
-     /* | factor POWER term { $$->dValue = pow(atof($1->code), atof ($3->code)); }
+     /*| factor POWER term { $$->dValue = pow(atof($1->code), atof ($3->code)); }
      | factor { $$->iValue = $1->iValue; }
      ;
 
-factor : '(' expr ')' { $$ = ($2); }
+/*factor : '(' expr ')' { $$ = ($2); }
        | oper_incr_decr { $$ = $1; }
        | ID { $$->code = $1; }
        | BOOL_LIT { $$->code = $1; }
@@ -177,4 +216,21 @@ int main(void) {
 int yyerror(char *msg) {
 	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
+}
+
+char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
+  int tam;
+  char * output;
+
+  tam = strlen(s1) + strlen(s2) + strlen(s3) + strlen(s4) + strlen(s5)+ 1;
+  output = (char *) malloc(sizeof(char) * tam);
+  
+  if (!output){
+    printf("Allocation problem. Closing application...\n");
+    exit(0);
+  }
+  
+  sprintf(output, "%s%s%s%s%s", s1, s2, s3, s4, s5);
+  
+  return output;
 }
