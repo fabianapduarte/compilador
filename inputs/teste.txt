@@ -1,2 +1,4 @@
-int i = 2
-print(345)
+bool j = false
+float i = 34
+print(2.2)
+print('a')

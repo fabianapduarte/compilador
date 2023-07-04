@@ -8,15 +8,15 @@
 
 %option yylineno
 
-DIGIT[0-9]+
-FLOAT{DIGIT}\.{DIGIT}
+DIGIT([0-9]+)
+FLOAT([0-9]+\.[0-9]+)
 
-CHAR\'[a-zA-Z0-9\s\-\_]?\'
-STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
+CHAR\'([^"]|\\\")\'
+STRING\"([^"]|\\\")*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
 
-TRUE\"true\"
-FALSE\"false\"
+TRUE true
+FALSE false
 OBJECT\"object\"
 
 ARRAY_INT\[(\s)?{DIGIT}((\s)?\,(\s)?{DIGIT}*(\s)?\]
@@ -104,6 +104,8 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
                             return STR_LIT; }
 {DIGIT}                   { yylval.sValue = strdup(yytext); 
                             return INT_LIT; }
+{FLOAT}                   { yylval.sValue = strdup(yytext); 
+                            return FLOAT_LIT; }
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
 

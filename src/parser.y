@@ -19,7 +19,7 @@
   struct record * rec;
 };
 
-%token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_INT CHAR_LIT
+%token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_LIT CHAR_LIT
 
 %token GLOBAL CONST ASSIGN
 %token FOR WHILE DO IF CONTINUE
@@ -28,17 +28,17 @@
 %token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <rec> program stmt stmts assign print
+%type <rec> program stmt stmts assign print string_aux char_aux print_aux
 /* %type <rec> function stmt stmts args args_aux 
-%type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr atr_list */
-/*%type <rec> loop for do_while while
+%type <rec> assign decl_var decl_const decl_global expr expr_eq expr_comp oper term factor oper_incr_decr atr_list 
+%type <rec> loop for do_while while
 %type <rec> conditional else elif_list elif if_then switch cases case */
 
 %start program
 
 %%
 
-program : stmts { printf("%d", $1->iValue);
+program : stmts { /*printf("%d", $1->iValue);*/
                   freeRecord($1);
                 }
         ;
@@ -58,14 +58,33 @@ stmt : /*function {$$ = createString($1);}*/
      ;
 
 print : PRINT '(' ID ')'           { printf("%s\n", $3); }
-      | PRINT '(' '"' STR_LIT '"' ')'      { printf("%s\n", $4);
-                                     /*char * code = cat("print", "(")*/
-                                   }
-      | PRINT '(' CHAR_LIT ')'     { printf("%s\n", $3); }
+      | PRINT '(' string_aux ')'   { printf("%s\n", $3->sValue); freeRecord($3);}
+      | PRINT '(' char_aux ')'     { printf("%s\n", $3->sValue); freeRecord($3);}
       | PRINT '(' INT_LIT ')'      { printf("%s\n", $3); }
-      | PRINT '(' FLOAT_INT ')'    { printf("%s\n", $3); }
+      | PRINT '(' FLOAT_LIT ')'    { printf("%s\n", $3); }
       | PRINT '(' BOOL_LIT ')'     { printf("%s\n", $3); }
+      /*| PRINT '(' print_aux ')'    { printf("%s\n", $3); }*/
       ;
+
+string_aux : STR_LIT     { char *string = malloc((strlen($1) - 2) * sizeof(char));
+                           strncpy(string, $1 + 1, strlen($1) - 2);
+                           $$ = createString(string);
+                           free (string);
+                         }
+                    
+char_aux : CHAR_LIT      { char *string = malloc(2 * sizeof(char));
+                           strncpy(string, $1 + 1, strlen($1) - 2);
+                           $$ = createString(string);
+                           free (string);
+                         }
+
+/*print_aux : STR_LIT '+' INT_LIT    { char *string = malloc((strlen($1)+strlen($3)-3) - + * sizeof(char));
+
+                                     strncpy(string, $3 + 1, strlen($3) - 2);
+                                     printf("%s\n", string);
+                                     free (string);
+                                   }*/
+
 
 /*decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
          ; 
@@ -111,7 +130,33 @@ args_aux : TYPE ID { printf("%s %s", $1, $2); }
          ; */
 
 assign : /*ID ASSIGN expr { $$ = $3; }*/
-       TYPE ID ASSIGN INT_LIT { $$ = createInt(atoi($4)); free($4); } 
+        TYPE ID ASSIGN INT_LIT {
+               if(strcmp($1, "int") == 0){
+                    $$ = createInt(atoi($4)); free($4); 
+               }else{
+                    yyerror("Wrong value");
+               }
+        } 
+       |TYPE ID ASSIGN FLOAT_LIT { 
+               if(strcmp($1, "float") == 0){
+                    $$ = createFloat(atof($4)); free($4); 
+               }else{
+                    yyerror("Wrong value");
+               } 
+       }
+       |TYPE ID ASSIGN BOOL_LIT { 
+               if(strcmp($1, "bool") == 0){
+                    if(strcmp($4, "false") == 0){
+                         $$ = createBool(0); 
+                    }else if (strcmp($4, "true") == 0){
+                         $$ = createBool(1); 
+                    }else{
+                         yyerror("Wrong value");
+                    }
+               }else{
+                    yyerror("Wrong value");
+               } 
+       }
        ;
 
 /*atr_list : TYPE 
