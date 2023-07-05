@@ -1,0 +1,24 @@
+
+int primeiroIntervalo = 0;
+int segundoIntervalo = 0;
+int terceiroIntervalo = 0;
+int quartoIntervalo = 0;
+
+int leitura = 0;
+input(leitura);
+
+while(leitura >= 0) {
+      if(leitura >= 0 && leitura <= 25) {
+          primeiroIntervalo = primeiroIntervalo + 1;
+      } 
+      if(leitura > 25 && leitura <= 50) {
+          segundoIntervalo = segundoIntervalo + 1;
+      }
+      if(leitura > 50 && leitura <= 75) {
+          terceiroIntervalo = terceiroIntervalo + 1;
+      }
+      if(leitura > 75 && leitura <= 100) {
+          quartoIntervalo = quartoIntervalo + 1;
+      }
+      input(leitura);
+}
