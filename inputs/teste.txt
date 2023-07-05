@@ -1,2 +1,6 @@
-print('a')
-print(2.3)
+int x = 3
+int z = 3
+int y = 2+2
+print(y)
+int x = g
+print(y)

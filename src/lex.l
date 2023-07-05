@@ -6,7 +6,7 @@
   extern int yyerror (char *msg); 
 %}
 
-%option yylineno
+%option noyylineno
 
 DIGIT([0-9]+)
 FLOAT([0-9]+\.[0-9]+)

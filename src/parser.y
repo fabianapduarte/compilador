@@ -8,10 +8,13 @@
 
   int yylex(void);
   int yyerror(char *s);
+  int yyerrorTk(char *s, char *t);
   extern int yylineno;
   extern char * yytext;
 
   char * cat(char *, char *, char *, char *, char *);
+
+  Stack stack;
 %}
 
 %union {
@@ -41,17 +44,19 @@
 
 program : stmts { /*printf("%d", $1->iValue);*/
                     // printf("%s\n", record->code);
+                    FILE *out_file = fopen("output.c", "w");
+                    fprintf(out_file, "#include <math.h>\n#include \"str_aux.h\"\n#include <stdio.h>\n#include \"node.h\"\n#include \"variable.h\"\n%s", $1->sValue);
                     freeRecord($1);
                 }
         ;
 
-stmts :            { $$ = createRecord("", VOID); }
+stmts :            { $$ = createRecord(&stack, "", VOID, ""); }
       | stmt stmts { $$ = $1; }
       ;
       
 stmt : /*function {$$ = createString($1);}*/
-     decl_var {$$;}
-     /*| decl_const 
+     /*decl_var {$$;}
+     | decl_const 
      | decl_global*/
       assign { /*$$->iValue = $1->iValue;*/ }
      | print { $$ = $1; }
@@ -59,22 +64,44 @@ stmt : /*function {$$ = createString($1);}*/
      | conditional*/
      ;
 
-print : PRINT '(' factor ')'  { 
-          if($3->type == INT){
-               printf("%d\n", $3->iValue);
-          }else if 
-          ($3->type == FLOAT){
-               printf("%f\n", $3->fValue); 
-          }else if 
-          ($3->type == CHAR){
-               printf("%c\n", $3->cValue); 
-          }else if 
-          ($3->type == STRING){
-               printf("%s\n", $3->sValue); 
-          }else{
-               yyerror("Incorrect types");
+print :   PRINT '(' ID ')'  {
+                    // printStack(&stack);
+                    // funcao de buscar na pilha
+                    record * ret = pop(&stack, $3);
+                    if(ret != NULL){
+                         if(ret->type == INT){
+                              printf("%i\n", ret->iValue); 
+                         }else if
+                         (ret->type == FLOAT){
+                              printf("%f\n", ret->fValue); 
+                         }else if
+                         (ret->type == CHAR){
+                              printf("%c\n", ret->cValue); 
+                         }else if
+                         (ret->type == STRING){
+                              printf("%s\n", ret->sValue); 
+                         }
+                    }else{
+                         yyerrorTk("Invalid ID", $3);
+                    }
+                    
+               }
+          |PRINT '(' factor ')'  { 
+               if($3->type == INT){
+                    printf("%d\n", $3->iValue);
+               }else if 
+               ($3->type == FLOAT){
+                    printf("%f\n", $3->fValue); 
+               }else if 
+               ($3->type == CHAR){
+                    printf("%c\n", $3->cValue); 
+               }else if 
+               ($3->type == STRING){
+                    printf("%s\n", $3->sValue); 
+               }else{
+                    yyerrorTk("Incorrect types", "print()");
+               }
           }
-     }
       /* | PRINT '(' STR_LIT ')'      { printf("%s\n", $3); }
       | PRINT '(' CHAR_LIT ')'     { printf("%s\n", $3); }
       | PRINT '(' INT_LIT ')'      { printf("%s\n", $3); }
@@ -83,7 +110,9 @@ print : PRINT '(' factor ')'  {
       ;
 
 
-decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
+decl_var : TYPE ID ASSIGN expr { 
+               $$ = $1;
+          }
          ; 
 
 /*decl_const : CONST TYPE ID ASSIGN expr { printf("const %s %s = %s", $2, $3, $5->code); }
@@ -127,7 +156,7 @@ args_aux : TYPE ID { printf("%s %s", $1, $2); }
          ; */
 
 assign :  ID ASSIGN expr { 
-          $$->iValue = $3->iValue; 
+          $$ = $3; 
           // char *id = (char*) malloc(strlen($1) * sizeof(char));
           // char *expr = (char*) malloc(strlen($3) * sizeof(char));
 
@@ -136,36 +165,60 @@ assign :  ID ASSIGN expr {
           // strcat(concatCode, expr);
           // free(id);
           // free(expr);
-          // $$->code = concatCode;
+          // $->code = concatCode;
      }
           |TYPE ID ASSIGN expr {
                if((strcmp($1, "int") == 0)){
                     if($4->type == INT){
+                         renameRecord(&stack, $4, $2);
                          $$ = $4; 
-                    }else{ yyerror("Int required"); }
+                    }else{ yyerrorTk("Int required", "="); }
                }
                else if(strcmp($1, "float") == 0){
                     if($4->type == FLOAT){
+                         renameRecord(&stack, $4, $2);
                          $$ = $4; 
-                    }else{ yyerror("Float required"); }
+                    }else{ yyerrorTk("Float required", "="); }
                }
                else if(strcmp($1, "bool") == 0){
                     if($4->type == BOOL){
+                         renameRecord(&stack, $4, $2);
                          $$ = $4; 
-                    }else{ yyerror("Bool required"); }
+                    }else{ yyerrorTk("Bool required", "="); }
                }
                else if(strcmp($1, "string") == 0){
                     if($4->type == STRING){
+                         renameRecord(&stack, $4, $2);
                          $$ = $4; 
-                    }else{ yyerror("String required"); }
+                    }else{ yyerrorTk("String required", "="); }
                }
                else if(strcmp($1, "char") == 0){
                     if($4->type == CHAR){
+                         renameRecord(&stack, $4, $2);
                          $$ = $4; 
-                    }else{ yyerror("Char required"); }
+                    }else{ yyerrorTk("Char required", "="); }
                }
-               else{ yyerror("Wrong assign"); }
+               else{ yyerrorTk("Wrong assign", "="); }
           } 
+          |TYPE ID ASSIGN ID {
+               $$ = pop(&stack, $4); 
+               if($$ != NULL){
+                    if($$->type == INT){
+                         $$ = createRecord(&stack, "", INT, $4); free($4);
+                    }else if
+                    ($$->type == FLOAT){
+                         $$ = createRecord(&stack, "", FLOAT, $4); free($4);
+                    }else if
+                    ($$->type == CHAR){
+                         $$ = createRecord(&stack, "", CHAR, $4); free($4);
+                    }else if
+                    ($$->type == STRING){
+                         $$ = createRecord(&stack, "", STRING, $4); free($4);
+                    }
+               }else{
+                    yyerrorTk("Invalid ID", $4);
+               }
+          }
        ;
 
 /*atr_list : TYPE 
@@ -175,36 +228,40 @@ assign :  ID ASSIGN expr {
 expr : NOT expr_eq { $$->bValue = !$2; }
      | expr_eq OR expr { $$->bValue = $1 || $3; }
      | expr_eq AND expr { $$->bValue = $1 && $3; }
-     | expr_eq {$$->iValue = $1->iValue;}
+     | expr_eq {$$ = $1;}
      ;
 
 expr_eq : expr_comp EQUAL expr_eq { $$->bValue = $1 == $3; }
         | expr_comp DIFFERENCE expr_eq { $$->bValue = $1 != $3; }
-        | expr_comp {$$->iValue = $1->iValue;}
+        | expr_comp {$$ = $1;}
         ;
 
 expr_comp : oper GREATER_THAN expr_comp { $$->bValue = $1 > $3; }
           | oper GREATER_THAN_OR_EQUAL expr_comp { $$->bValue = $1 >= $3; }
           | oper LESS_THAN expr_comp { $$->bValue = $1 < $3; }
           | oper LESS_THAN_OR_EQUAL expr_comp { $$->bValue = $1 <= $3; }
-          | oper {$$->iValue = $1->iValue;}
+          | oper {$$ = $1;}
           ;
 
 oper : term SUM oper { 
           if(($1->type == INT) && ($3->type == INT)){
-               $$->iValue = $1->iValue + $3->iValue; 
+               char str[10];
+               sprintf(str, "%d", ($1->iValue + $3->iValue));
+               $$ = createRecord(&stack, "", INT, str); free($1);
           }else if
           (($1->type == FLOAT) && ($3->type == FLOAT)){
                $$->fValue = $1->fValue + $3->fValue; 
-          }else{yyerror("Incorrect types");}
+          }else{yyerrorTk("Incorrect types", "+");}
      }
      | term SUBTRACTION oper { 
           if(($1->type == INT) && ($3->type == INT)){
-               $$->iValue = $1->iValue - $3->iValue;
+               char str[10];
+               sprintf(str, "%d", ($1->iValue - $3->iValue));
+               $$ = createRecord(&stack, "", INT, str); free($1);
           }else if
           (($1->type == FLOAT) && ($3->type == FLOAT)){
                $$->fValue = $1->fValue - $3->fValue;
-          }else{yyerror("Incorrect types");} 
+          }else{yyerrorTk("Incorrect types", "-");} 
      }
      | term { 
           $$ = $1;
@@ -223,7 +280,7 @@ term : factor MULTIPLICATION term {
           }else if
           (($1->type == FLOAT) && ($3->type == FLOAT)){
                $$->fValue = $1->fValue * $3->fValue; 
-          }else{yyerror("Incorrect types");}
+          }else{yyerrorTk("Incorrect types", "*");}
      }
      | factor DIVISION term { 
           if(($1->type == INT) && ($3->type == INT)){
@@ -231,7 +288,7 @@ term : factor MULTIPLICATION term {
           }else if
           (($1->type == FLOAT) && ($3->type == FLOAT)){
                $$->fValue = $1->fValue / $3->fValue; 
-          }else{yyerror("Incorrect types");}
+          }else{yyerrorTk("Incorrect types", "/");}
      }
      /*| factor REST term { $$->iValue = atoi($1->code) % atoi($3->code); }*/
      /*Ta com erro de tipo aqui nessa potencia, to arredondando pra int por ora*/
@@ -258,13 +315,13 @@ factor : /*'(' expr ')' { $$ = ($2); }
                     $$ = createBool(1); 
                     free($1);
                }else{
-                    yyerror("Incorrect bool type assignment");
+                    yyerrorTk("Incorrect bool type assignment", "=");
                }
        }
-       | INT_LIT    { $$ = createInt(atoi($1)); free($1); }
-       | FLOAT_LIT  { $$ = createFloat(atof($1)); free($1); }
-       | STR_LIT    { $$ = createString($1); free($1); }
-       | CHAR_LIT   { $$ = createChar($1); free($1); }
+       | INT_LIT    { $$ = createRecord(&stack, "", INT, $1); free($1); }
+       | FLOAT_LIT  { $$ = createRecord(&stack, "", FLOAT, $1); free($1); }
+       | STR_LIT    { $$ = createRecord(&stack, "", STRING, $1); free($1); }
+       | CHAR_LIT   { $$ = createRecord(&stack, "", CHAR, $1); free($1); }
        ;
 
 /*oper_incr_decr : ID INCREMENT { $$->iValue = atoi($1)+1; }
@@ -318,11 +375,16 @@ do_while : DO '{' stmts '}' WHILE '(' expr ')' { printf("DO {} WHILE (%s)", $7->
 %%
 
 int main(void) {
+     initialize(&stack);
 	return yyparse();
 }
 
 int yyerror(char *msg) {
 	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
+	return 0;
+}
+int yyerrorTk(char *msg, char* tkn) {
+	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, tkn);
 	return 0;
 }
 
