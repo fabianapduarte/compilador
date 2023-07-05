@@ -4,49 +4,29 @@
 #define MAX_SIZE 100
 
 struct record {
-  char * code; /* field for storing the output code */
-  int type; /* field for type code */
-  char * name;
-  int iValue;
-  float fValue;
-  int bValue;
-  char cValue;
-  char * sValue;
+  char * code;     /* field for storing the output code */
+  char * type;     /* field for type code */
+  char * name;     /* field for variable name */
+  char * sValue;   /* field for variable name */
 };
 
-enum types {
-  INT,
-  FLOAT,
-  CHAR,
-  STRING,
-  OBJECT,
-  ARRAY,
-  VOID,
-  BOOL,
-  FUNCTION
-};
 typedef struct record record;
 
 typedef struct Stack{
-    struct record* data[MAX_SIZE];
-    int top;
+  struct record* data[MAX_SIZE];
+  int top;
 } Stack;
  
 void freeRecord(record *);
-record * createRecord(Stack*, char *, int, char *);
-record * createInt(int);
-record * createFloat(float);
-record * createBool(int);
-record * createChar(char *);
-record * createString(char *);
+record * createRecord(Stack*, char *, char *, char *);
 void renameRecord(Stack *, record *, char *);
 void exprCode(record *);
 
-void initialize(Stack *stack);
-int isEmpty(Stack* stack);
-int isFull(Stack* stack);
-void push(Stack* stack, record * value);
-record * pop(Stack* stack, char * name);
-void printStack(Stack* stack);
+void initialize(Stack *);
+int isEmpty(Stack*);
+int isFull(Stack*);
+void push(Stack*, record *);
+record * search(Stack*, char *);
+void printStack(Stack*);
 
 #endif

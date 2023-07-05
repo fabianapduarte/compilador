@@ -1,6 +1,5 @@
 int x = 3
-int z = 3
-int y = 2+2
-print(y)
-int x = g
-print(y)
+bool booleano = false
+float f = 2.1
+char c = 'a'
+string s = "ola mundo"
