@@ -98,9 +98,12 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
                             return BOOL_LIT; }
 {FALSE}                   { yylval.sValue = strdup(yytext);
                             return BOOL_LIT; }
-{CHAR}                    { yylval.sValue = strdup(yytext);
+{CHAR}                    { char* string = (char*)malloc(2 * sizeof(char));
+                            string[0] = yytext[1];
+                            string[1] = '\0';
+                            yylval.sValue = string;
                             return CHAR_LIT; }
-{STRING}                  { yylval.sValue = strdup(yytext);
+{STRING}                  { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2);
                             return STR_LIT; }
 {DIGIT}                   { yylval.sValue = strdup(yytext); 
                             return INT_LIT; }

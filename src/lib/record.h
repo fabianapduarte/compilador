@@ -11,11 +11,6 @@ struct record {
   char * sValue;
 };
 
-// enum bool {
-//   FALSE,
-//   TRUE
-// };
-
 enum types {
   INT,
   FLOAT,
@@ -24,7 +19,8 @@ enum types {
   OBJECT,
   ARRAY,
   VOID,
-  BOOL
+  BOOL,
+  FUNCTION
 };
 
 typedef struct record record;
@@ -34,7 +30,8 @@ record * createRecord(char *, int);
 record * createInt(int);
 record * createFloat(float);
 record * createBool(int);
-record * createChar(char);
+record * createChar(char *);
 record * createString(char *);
+void exprCode(record *);
 
 #endif

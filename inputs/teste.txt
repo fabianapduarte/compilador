@@ -1,6 +1,2 @@
-x = 1
-x = 5*5
-print(5*5+5)
-string i = "a"
-print(2.2)
 print('a')
+print(2.3)

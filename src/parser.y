@@ -28,8 +28,8 @@
 %token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <rec> program stmt stmts assign print string_aux char_aux print_aux
-%type <rec> factor term expr expr_eq expr_comp oper
+%type <rec> program stmt stmts assign print
+%type <rec> factor expr expr_eq expr_comp oper term decl_var
 /* %type <rec> function stmt stmts args args_aux 
 %type <rec> assign decl_var decl_const decl_global term factor oper_incr_decr atr_list 
 %type <rec> loop for do_while while
@@ -40,58 +40,53 @@
 %%
 
 program : stmts { /*printf("%d", $1->iValue);*/
-                  freeRecord($1);
+                    // printf("%s\n", record->code);
+                    freeRecord($1);
                 }
         ;
 
 stmts :            { $$ = createRecord("", VOID); }
-      | stmt stmts { $$ = createInt($1->iValue); }
+      | stmt stmts { $$ = $1; }
       ;
       
 stmt : /*function {$$ = createString($1);}*/
-     /*decl_var {$$;}
-     | decl_const 
+     decl_var {$$;}
+     /*| decl_const 
      | decl_global*/
-      assign { $$->iValue = $1->iValue; }
+      assign { /*$$->iValue = $1->iValue;*/ }
      | print { $$ = $1; }
      /*| loop 
      | conditional*/
      ;
 
-print : PRINT '(' ID ')'           { printf("%s\n", $3); }
-      | PRINT '(' string_aux ')'   { printf("%s\n", $3->sValue); freeRecord($3);}
-      | PRINT '(' char_aux ')'     { printf("%s\n", $3->sValue); freeRecord($3);}
+print : PRINT '(' factor ')'  { 
+          if($3->type == INT){
+               printf("%d\n", $3->iValue);
+          }else if 
+          ($3->type == FLOAT){
+               printf("%f\n", $3->fValue); 
+          }else if 
+          ($3->type == CHAR){
+               printf("%c\n", $3->cValue); 
+          }else if 
+          ($3->type == STRING){
+               printf("%s\n", $3->sValue); 
+          }else{
+               yyerror("Incorrect types");
+          }
+     }
+      /* | PRINT '(' STR_LIT ')'      { printf("%s\n", $3); }
+      | PRINT '(' CHAR_LIT ')'     { printf("%s\n", $3); }
       | PRINT '(' INT_LIT ')'      { printf("%s\n", $3); }
       | PRINT '(' FLOAT_LIT ')'    { printf("%s\n", $3); }
-      | PRINT '(' BOOL_LIT ')'     { printf("%s\n", $3); }
-      | PRINT '(' expr ')'         { printf("%d\n", $3->iValue); }
-      /*| PRINT '(' print_aux ')'    { printf("%s\n", $3); }*/
+      | PRINT '(' BOOL_LIT ')'     { printf("%s\n", $3); } */
       ;
 
-string_aux : STR_LIT     { char *string = malloc((strlen($1) - 2) * sizeof(char));
-                           strncpy(string, $1 + 1, strlen($1) - 2);
-                           $$ = createString(string);
-                           free (string);
-                         };
-                    
-char_aux : CHAR_LIT      { char *string = malloc(2 * sizeof(char));
-                           strncpy(string, $1 + 1, strlen($1) - 2);
-                           $$ = createString(string);
-                           free (string);
-                         };
 
-/*print_aux : STR_LIT '+' INT_LIT    { char *string = malloc((strlen($1)+strlen($3)-3) - + * sizeof(char));
-
-                                     strncpy(string, $3 + 1, strlen($3) - 2);
-                                     printf("%s\n", string);
-                                     free (string);
-                                   }*/
-
-
-/*decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
+decl_var : TYPE ID ASSIGN expr { printf("%s %s = %s", $1, $2, $4->code); }
          ; 
 
-decl_const : CONST TYPE ID ASSIGN expr { printf("const %s %s = %s", $2, $3, $5->code); }
+/*decl_const : CONST TYPE ID ASSIGN expr { printf("const %s %s = %s", $2, $3, $5->code); }
            ;
 
 decl_global : GLOBAL TYPE ID ASSIGN expr { printf("global %s %s = %s", $2, $3, $5->code); }
@@ -131,8 +126,19 @@ args_aux : TYPE ID { printf("%s %s", $1, $2); }
          | TYPE ID ',' args_aux { printf("%s %s; %s", $1, $2, $4->sValue); }
          ; */
 
-assign :  ID ASSIGN expr { $$->iValue = $3->iValue; }
-          |TYPE ID ASSIGN factor {
+assign :  ID ASSIGN expr { 
+          $$->iValue = $3->iValue; 
+          // char *id = (char*) malloc(strlen($1) * sizeof(char));
+          // char *expr = (char*) malloc(strlen($3) * sizeof(char));
+
+          // char *concatCode = (char*) malloc((strlen($1) + strlen($3) + 2) * sizeof(char));
+          // strcpy(concatCode, id);
+          // strcat(concatCode, expr);
+          // free(id);
+          // free(expr);
+          // $$->code = concatCode;
+     }
+          |TYPE ID ASSIGN expr {
                if((strcmp($1, "int") == 0)){
                     if($4->type == INT){
                          $$ = $4; 
@@ -165,23 +171,23 @@ assign :  ID ASSIGN expr { $$->iValue = $3->iValue; }
 /*atr_list : TYPE 
          | TOKEN ',' INT_LIT 
          ;*/
-
-expr : /*NOT expr_eq { $$->bValue = !$2; }
+         
+expr : NOT expr_eq { $$->bValue = !$2; }
      | expr_eq OR expr { $$->bValue = $1 || $3; }
      | expr_eq AND expr { $$->bValue = $1 && $3; }
-     |*/ expr_eq {$$->iValue = $1->iValue;}
+     | expr_eq {$$->iValue = $1->iValue;}
      ;
 
-expr_eq : /*expr_comp EQUAL expr_eq { $$->bValue = $1 == $3; }
+expr_eq : expr_comp EQUAL expr_eq { $$->bValue = $1 == $3; }
         | expr_comp DIFFERENCE expr_eq { $$->bValue = $1 != $3; }
-        |*/ expr_comp {$$->iValue = $1->iValue;}
+        | expr_comp {$$->iValue = $1->iValue;}
         ;
 
-expr_comp : /*oper GREATER_THAN expr_comp { $$->bValue = $1 > $3; }
+expr_comp : oper GREATER_THAN expr_comp { $$->bValue = $1 > $3; }
           | oper GREATER_THAN_OR_EQUAL expr_comp { $$->bValue = $1 >= $3; }
           | oper LESS_THAN expr_comp { $$->bValue = $1 < $3; }
           | oper LESS_THAN_OR_EQUAL expr_comp { $$->bValue = $1 <= $3; }
-          |*/ oper {$$->iValue = $1->iValue;}
+          | oper {$$->iValue = $1->iValue;}
           ;
 
 oper : term SUM oper { 
@@ -201,12 +207,13 @@ oper : term SUM oper {
           }else{yyerror("Incorrect types");} 
      }
      | term { 
-          if($1->type == INT){
-               $$->iValue = $1->iValue; 
-          }else if
-          ($1->type == FLOAT){
-               $$->fValue = $1->fValue; 
-          }else{yyerror("Incorrect types");} 
+          $$ = $1;
+          // if($1->type == INT){
+          //      $$->iValue = $1->iValue; 
+          // }else if
+          // ($1->type == FLOAT){
+          //      $$->fValue = $1->fValue; 
+          // }else{yyerror("Incorrect types");} 
      }
      ;
 
@@ -229,31 +236,21 @@ term : factor MULTIPLICATION term {
      /*| factor REST term { $$->iValue = atoi($1->code) % atoi($3->code); }*/
      /*Ta com erro de tipo aqui nessa potencia, to arredondando pra int por ora*/
      /*| factor POWER term { $$->dValue = pow(atof($1->code), atof ($3->code)); }*/
-     | factor { 
-          if($1->type == INT){
-               $$->iValue = $1->iValue; 
-          }else if($1->type == FLOAT){
-               $$->fValue = $1->fValue; 
-          }
+     | factor {
+          $$ = $1;
+          // if($1->type == INT){
+          //      $$->iValue = $1->iValue; 
+          // }else if($1->type == FLOAT){
+          //      $$->fValue = $1->fValue; 
+          // }
      }
-     | TYPE '(' factor ')' { 
-          if( $1->type == INT ){
-               if($3->type == FLOAT){
-                    
-               }else if
-               ($3->type == STRING){
-
-               }else{
-                    yyerror("type change not allowed");
-               }
-          } 
-          }
      ;
 
 factor : /*'(' expr ')' { $$ = ($2); }
-       | oper_incr_decr { $$ = $1; }*/
-       /*| ID { $$->code = $1; }
-       |*/ BOOL_LIT { 
+       | oper_incr_decr { $$ = $1; }
+       | ID { $$->code = $1; }
+       |*/ 
+       BOOL_LIT { 
                if(strcmp($1, "false") == 0){
                     $$ = createBool(0); 
                     free($1);
@@ -267,7 +264,7 @@ factor : /*'(' expr ')' { $$ = ($2); }
        | INT_LIT    { $$ = createInt(atoi($1)); free($1); }
        | FLOAT_LIT  { $$ = createFloat(atof($1)); free($1); }
        | STR_LIT    { $$ = createString($1); free($1); }
-       | CHAR_LIT   { $$ = createChar(*$1); free($1); }
+       | CHAR_LIT   { $$ = createChar($1); free($1); }
        ;
 
 /*oper_incr_decr : ID INCREMENT { $$->iValue = atoi($1)+1; }

@@ -67,7 +67,7 @@ record * createBool(int value) {
   return r;
 }
 
-record * createChar(char value) {
+record * createChar(char * value) {
   record * r = (record *) malloc(sizeof(record));
 
   if (!r) {
@@ -75,7 +75,7 @@ record * createChar(char value) {
     exit(0);
   }
 
-  r->cValue = value;
+  r->cValue = value[0];
   r->type = CHAR;
 
   return r;
