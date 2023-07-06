@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 extern int yylineno;
-
+int yydebug = 0;
 void freeRecord(record * r) {
   if (r) {
     if (r->code != NULL) free(r->code);
@@ -68,9 +68,9 @@ record * search(Stack* stack, char * name) {
   record * r;
   while(size >= 0) {
     r = stack->data[size];
-    if(strcmp(name, r->name) == 0) {
-      return r;
-    }
+      if((name!=NULL) && (strcmp(name, r->name) == 0)) {
+        return r;
+      }
     size--;
   }
   return NULL;
