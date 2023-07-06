@@ -4,3 +4,5 @@
 y.tab.h.gch
 *.output
 /src/compilador
+output
+output.c

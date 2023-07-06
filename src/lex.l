@@ -6,25 +6,18 @@
   extern int yyerror (char *msg); 
 %}
 
-%option yylineno
+%option noyylineno
 
-DIGIT[0-9]+
-FLOAT{DIGIT}\.{DIGIT}
+DIGIT([0-9]+)
+FLOAT([0-9]+\.[0-9]+)
 
-CHAR\'[a-zA-Z0-9\s\-\_]?\'
-STRING\"([a-zA-Z0-9]|\s|\-|\_)*\"
+CHAR\'([^"]|\\\")\'
+STRING\"([^"]|\\\")*\"
 IDENTIFIER[a-zA-Z](_|[a-zA-Z0-9])*
-PRINT[print\(\s*[\w\s"]*\s*\)]
 
-TRUE\"true\"
-FALSE\"false\"
+TRUE true
+FALSE false
 OBJECT\"object\"
-
-ARRAY_INT\[(\s)?{DIGIT}((\s)?\,(\s)?{DIGIT}*(\s)?\]
-ARRAY_BOOL\[(\s)?({TRUE}|{FALSE})(\s)?\,(\s)?({TRUE}|{FALSE})(\s)?\]
-ARRAY_FLOAT\[(\s)?{FLOAT}((\s)?\,(\s)?{FLOAT}*(\s)?\]
-ARRAY_CHAR\[((\s)?{CHAR}(\s)?)(\,(\s)?{CHAR}(\s)?)*\]
-ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
 
 %%
 
@@ -41,12 +34,13 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
 "while"                   { return(WHILE); }
 "break"                   { return(BREAK); }
 "continue"                { return(CONTINUE); }
-{PRINT}                   { return(PRINT); }
+"print"                   { return(PRINT); }
 "func"                    { return(FUNC); }
 "return"                  { return(RETURN); }
 "global"                  { return(GLOBAL); }
 "const"                   { return(CONST); }
 "default"                 { return(DEFAULT); }
+"input"                   { return(INPUT); }
 
 "or"                      { return(OR); }
 "and"                     { return(AND); }
@@ -99,15 +93,20 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
                             return BOOL_LIT; }
 {FALSE}                   { yylval.sValue = strdup(yytext);
                             return BOOL_LIT; }
-{CHAR}                    { yylval.sValue = strdup(yytext);
+{CHAR}                    { char* string = (char*)malloc(2 * sizeof(char));
+                            string[0] = yytext[1];
+                            string[1] = '\0';
+                            yylval.sValue = string;
                             return CHAR_LIT; }
-{STRING}                  { yylval.sValue = strdup(yytext);
+{STRING}                  { yylval.sValue = strndup(yytext + 1, strlen(yytext) - 2);
                             return STR_LIT; }
 {DIGIT}                   { yylval.sValue = strdup(yytext); 
                             return INT_LIT; }
+{FLOAT}                   { yylval.sValue = strdup(yytext); 
+                            return FLOAT_LIT; }
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
-
+(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*) {  } /*Comentario*/
 .                         { yyerror("Invalid character."); }
 
 %%

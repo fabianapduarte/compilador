@@ -1,3 +1,1 @@
-void func main() {
-    print("ola mundo")
-}
+print("ola mundo")
