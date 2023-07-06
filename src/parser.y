@@ -27,7 +27,7 @@
 
 %token <sValue> TYPE ID STR_LIT BOOL_LIT INT_LIT FLOAT_LIT CHAR_LIT
 
-%token GLOBAL CONST ASSIGN
+%token GLOBAL CONST ASSIGN INPUT
 %token FOR WHILE DO IF CONTINUE
 %token ELIF ELSE SWITCH CASE DEFAULT BREAK
 %token FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
@@ -44,7 +44,7 @@
 
 program : stmts { 
                   FILE * out_file = fopen("output.c", "w");
-                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n\nint main(void) {\n%s\n}", $1);
+                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n%s\n}", $1);
                 }
         ;
 
@@ -72,6 +72,13 @@ stmt : assign {
         $$ = code;
         free(output);
        }
+     | TYPE ID ASSIGN INPUT '(' ')' {
+        char * code;
+        code = cat("char * ", $2, " = (char *) malloc(100 * sizeof(char));\n", "", "");
+        code = cat(code, "scanf(\"%s\", ", $2, ");", "");
+        createRecord(&stack, $2, "string", $2, "char");
+        $$ = code;
+     }
      ;
 
 print : PRINT '(' expr ')' { $$ = $3; }

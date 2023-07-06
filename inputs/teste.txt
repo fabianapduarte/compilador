@@ -8,11 +8,14 @@ string intToString = string(1)
 string floatToString = string(1.1)
 string charToString = string('c')
 //string stringToString = string("fabiana")
+
 int z = x / 3
 char c = 'a'
 string s = "ola mundo"
 print(1.5)
 print(15)
+int af = input()
+print(af)
 print(true)
 print(false)
 print("oi")

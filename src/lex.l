@@ -40,6 +40,7 @@ OBJECT\"object\"
 "global"                  { return(GLOBAL); }
 "const"                   { return(CONST); }
 "default"                 { return(DEFAULT); }
+"input"                   { return(INPUT); }
 
 "or"                      { return(OR); }
 "and"                     { return(AND); }
