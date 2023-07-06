@@ -11,35 +11,39 @@ A linguagem proposta está inserida no domínio de programação de sistemas par
 
 A linguagem é C-Based e fortemente tipada, entretanto visa uma sintáxe mais simples, buscando referências em JavaScript e Python. Portanto, a prioridade é o desempenho do programador diante da facilidade de escrita.
 
-Possui os tipos primitivos: int, float, char, string, bool, array e object
+Possui os tipos primitivos: int, float, char, string, bool, array e object.
 
 Por ser fortemente tipada a linguagem não implementa conversões implicitas, possuindo as seguintes conversões explícitas:
+```
+float(<int>)
+int(<float>)
+string(<int>) - string(<float>) - string(<char>)
+```
 
-float(<int>) - int(<float>) - string(<int>) - string(<float>) - string(<char>)
 - Para variáveis globais existe a palavra reservada:
-- global <_tipo_> 
+    - global <_tipo_> 
 - Operadores lógicos, aritméticos e relacionais
-- Incremento e decremento
-    - ++, -- (Unário - pós-fixado)
-- Negação de sinal, incremento e decremento e negação
-    - -, ++, --, not (Unário - prefixado)
-- Exponenciação
-    - ** (Binário)
-- Multiplicação, divisão e módulo
-    - *, /, % (Binário)
-- Soma e subtração
-    - +, – (Binário)
-- Menor, maior, menor ou igual e maior ou igual
-    - <, >, <=, >= (Binário)
-- Igualdade e desigualdade
-    - ==, !=  (Binário)
-- Operadores OU, AND
-    - or, and (Binário)
+    - Incremento e decremento
+        - ++, -- (Unário - pós-fixado)
+    - Negação de sinal, incremento e decremento e negação
+        - -, ++, --, not (Unário - prefixado)
+    - Exponenciação
+        - ** (Binário)
+    - Multiplicação, divisão e módulo
+        - *, /, % (Binário)
+    - Soma e subtração
+        - +, – (Binário)
+    - Menor, maior, menor ou igual e maior ou igual
+        - <, >, <=, >= (Binário)
+    - Igualdade e desigualdade
+        - ==, !=  (Binário)
+    - Operadores OU, AND
+        - or, and (Binário)
 
 - Função de escrita
-- print()
+    - `print()`
 - Função de leitura
-- input()
+    - `input()`
 - Comentários são realizados com //
 ---
 
