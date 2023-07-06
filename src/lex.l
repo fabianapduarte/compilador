@@ -19,12 +19,6 @@ TRUE true
 FALSE false
 OBJECT\"object\"
 
-ARRAY_INT\[(\s)?{DIGIT}((\s)?\,(\s)?{DIGIT}*(\s)?\]
-ARRAY_BOOL\[(\s)?({TRUE}|{FALSE})(\s)?\,(\s)?({TRUE}|{FALSE})(\s)?\]
-ARRAY_FLOAT\[(\s)?{FLOAT}((\s)?\,(\s)?{FLOAT}*(\s)?\]
-ARRAY_CHAR\[((\s)?{CHAR}(\s)?)(\,(\s)?{CHAR}(\s)?)*\]
-ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
-
 %%
 
 [ \t]                     ;
