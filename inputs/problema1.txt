@@ -1,5 +1,5 @@
 float x = 2.4
 float y = 15.3
 int c = 2
-float resultado = (x ** float(2)) - y + float(c)
+float resultado = x ** float(2) - y + float(c)
 print(resultado)
