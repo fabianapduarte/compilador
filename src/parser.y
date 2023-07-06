@@ -14,8 +14,8 @@
 
   char * cat(char *, char *, char *, char *, char *);
 
-  int countIntDigits(int number);
-  int countIntDigitsFloat(float);
+  int countIntDigits(int);
+  int countFloatDigits(float);
 
   struct Stack stack;
 %}
@@ -35,7 +35,7 @@
 %token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
 %type <sValue> stmt stmts
-%type <rec> assign print
+%type <rec> assign print casting
 %type <rec> expr expr_eq expr_comp oper term factor
 
 %start program
@@ -121,9 +121,9 @@ assign : TYPE ID ASSIGN expr {
 expr : NOT expr_eq { 
                   if (($2 != NULL) && strcmp($2->type, "bool") == 0) {
                     if(strcmp($2->sValue, "0") == 0){
-                      setValue($2, "bool", "1"); 
+                      setValue($2, "bool", "1", "int"); 
                     }else if(strcmp($2->sValue, "1") == 0){
-                      setValue($2, "bool", "0");
+                      setValue($2, "bool", "0", "int");
                     }
                     $$ = $2;
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
@@ -177,7 +177,7 @@ oper : term SUM oper {
                           else if(strcmp($1->type, "float") == 0){
                             if((strcmp($3->type, "float") == 0)){
                               float sum = atof($1->sValue) + atof($3->sValue);
-                              char * sumString = (char *) malloc(countIntDigitsFloat(sum) * sizeof(char));
+                              char * sumString = (char *) malloc(countFloatDigits(sum) * sizeof(char));
                               sprintf(sumString, "%f", sum);
                               $$ = createRecord(&stack, NULL, "float", sumString, "float");
                             }else { yyerrorTk("Different types", "+", yylineno-1); }
@@ -190,13 +190,12 @@ oper : term SUM oper {
                                   char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
                                   sprintf(subString, "%d", sub);
                                   $$ = createRecord(&stack, NULL, "int", subString, "int");
-                                  // freeRecord($1); freeRecord($3);
                                 }else { yyerrorTk("Different types", "-", yylineno-1); }
                               }
                               else if(strcmp($1->type, "float") == 0){
                                 if((strcmp($3->type, "float") == 0)){
                                   float sub = atof($1->sValue) - atof($3->sValue);
-                                  char * subString = (char *) malloc(countIntDigitsFloat(sub) * sizeof(char));
+                                  char * subString = (char *) malloc(countFloatDigits(sub) * sizeof(char));
                                   sprintf(subString, "%f", sub);
                                   $$ = createRecord(&stack, NULL, "float", subString, "float");
                                 }else { yyerrorTk("Different types", "-", yylineno-1); }
@@ -217,7 +216,7 @@ term : factor MULTIPLICATION term {
                                     else if(strcmp($1->type, "float") == 0){
                                       if((strcmp($3->type, "float") == 0)){
                                         float mult = atof($1->sValue) * atof($3->sValue);
-                                        char * multString = (char *) malloc(countIntDigitsFloat(mult) * sizeof(char));
+                                        char * multString = (char *) malloc(countFloatDigits(mult) * sizeof(char));
                                         sprintf(multString, "%f", mult);
                                         $$ = createRecord(&stack, NULL, "float", multString, "float");
                                       }else { yyerrorTk("Different types", "*", yylineno-1); }
@@ -235,7 +234,7 @@ term : factor MULTIPLICATION term {
                                     else if((strcmp($1->type, "float") == 0)){
                                       if((strcmp($3->type, "float") == 0)){
                                         float division = atof($1->sValue) / atof($3->sValue);
-                                        char * divisionString = (char *) malloc(countIntDigitsFloat(division) * sizeof(char));
+                                        char * divisionString = (char *) malloc(countFloatDigits(division) * sizeof(char));
                                         sprintf(divisionString, "%f", division);
                                         $$ = createRecord(&stack, NULL, "float", divisionString, "float");
                                       }else{ yyerrorTk("Different types", "/", yylineno-1); }
@@ -244,7 +243,8 @@ term : factor MULTIPLICATION term {
      | factor                     { $$ = $1; }
      ;
 
-factor : ID         {
+factor : casting { $$ = $1; }
+        | ID         {
                       struct record * id = search(&stack, $1);
                       if (id != NULL) $$ = id;
                       else yyerrorTk("Identifier not found", $1, yylineno);
@@ -260,6 +260,38 @@ factor : ID         {
        | STR_LIT    { $$ = createRecord(&stack, NULL, "string", $1, "char"); }
        | CHAR_LIT   { $$ = createRecord(&stack, NULL, "char", $1, "char"); }
        ;
+
+casting : TYPE '(' expr ')' {
+                              if ((strcmp($1, "int") == 0)) {
+                                if ((strcmp($3->type, "float") == 0)) {
+                                  float numberFloat = atof($3->sValue);
+                                  int numberInt = (int) numberFloat;
+                                  char * numberString = (char *) malloc(countIntDigits(numberInt) * sizeof(char));
+                                  sprintf(numberString, "%d", numberInt);
+                                  $$ = createRecord(&stack, NULL, "int", numberString, "int");
+                                  free($1);
+                                } else { yyerrorTk("Incorrect type conversion: expected float", $1, yylineno); }
+                              }
+                              else if ((strcmp($1, "float") == 0)) {
+                                if ((strcmp($3->type, "int") == 0)) {
+                                  int numberInt = atoi($3->sValue);
+                                  float numberFloat = (float) numberInt;
+                                  char * numberString = (char *) malloc(countFloatDigits(numberFloat) * sizeof(char));
+                                  sprintf(numberString, "%f", numberFloat);
+                                  $$ = createRecord(&stack, NULL, "float", numberString, "float");
+                                  free($1);
+                                } else { yyerrorTk("Incorrect type conversion: expected int", $1, yylineno); }
+                              }
+                              else if ((strcmp($1, "string") == 0)) {
+                                if (strcmp($3->type, "int") == 0 || strcmp($3->type, "float") == 0 || strcmp($3->type, "char") == 0) {
+                                  $$ = createRecord(&stack, NULL, "string", $3->sValue, "char");
+                                  free($1);
+                                }
+                                else { yyerrorTk("Incorrect type conversion: expected int, float or char", $1, yylineno); }
+                              }
+                              else { yyerrorTk("Unsupported conversion", $1, yylineno); }
+                            }
+        ;
 
 %%
 
@@ -304,7 +336,7 @@ int countIntDigits(int number) {
   return count;
 }
 
-int countIntDigitsFloat(float num) {
+int countFloatDigits(float num) {
   int count = 0;
   int number = (int) num;
   do {

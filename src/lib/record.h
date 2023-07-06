@@ -20,12 +20,11 @@ typedef struct Stack{
 void freeRecord(record *);
 record * createRecord(Stack *, char *, char *, char *, char *);
 void renameRecord(Stack *, record *, char *);
-void exprCode(record *);
 
 void initialize(Stack *);
 int isEmpty(Stack*);
 int isFull(Stack*);
-void setValue(record *, char *, char *);
+void setValue(record *, char *, char *, char*);
 void push(Stack*, record *);
 record * search(Stack*, char *);
 void printStack(Stack*);

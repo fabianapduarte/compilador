@@ -14,9 +14,10 @@ void freeRecord(record * r) {
   }
 }
 
-void setValue(record *r, char * type, char * value) {
+void setValue(record *r, char * type, char * value, char * code) {
   r->type = type;
   r->sValue = value;
+  r->code = code;
 }
 
 record * createRecord(Stack * stack, char * name, char * type, char * value, char * code) {
@@ -42,12 +43,12 @@ record * createRecord(Stack * stack, char * name, char * type, char * value, cha
   record * ret = search(stack, name);
   if (ret != NULL) {
     if (strcmp(ret->type, type) == 0) {
-      setValue(ret, type, value);
+      setValue(ret, type, value, code);
       return ret;
     }
   }
   
-  setValue(r, type, value);
+  setValue(r, type, value, code);
   push(stack, r);
   return r;
 }
