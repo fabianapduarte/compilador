@@ -30,9 +30,9 @@
 %token GLOBAL CONST ASSIGN
 %token FOR WHILE DO IF CONTINUE
 %token ELIF ELSE SWITCH CASE DEFAULT BREAK
-%token FUNC RETURN PRINT PARSEINT PARSEFLOAT PARSECHAR PARSESTRING
-%token OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
-%token SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
+%token FUNC RETURN PRINT
+%left OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
+%left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
 %type <sValue> stmt stmts
 %type <rec> assign print casting
@@ -128,7 +128,7 @@ expr : NOT expr_eq {
                     $$ = $2;
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
       }
-     | expr_eq OR expr { 
+     | expr OR expr_eq { 
                   if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
                     if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
                       char * boolString = (char *) malloc(1 * sizeof(char));
@@ -139,7 +139,7 @@ expr : NOT expr_eq {
                     }else{yyerrorTk("Not a boolean", "=", yylineno-1);}
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
      }
-     | expr_eq AND expr { 
+     | expr AND expr_eq { 
                   if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
                     if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
                       char * boolString = (char *) malloc(1 * sizeof(char));
@@ -153,7 +153,7 @@ expr : NOT expr_eq {
      | expr_eq { $$ = $1; }
      ;
 
-expr_eq : expr_comp EQUAL expr_eq { 
+expr_eq : expr_eq EQUAL expr_comp { 
               if($1!=NULL && $3!=NULL && (strcmp($1->type, $3->type) == 0)){
                   int compare = strcmp($1->sValue, $3->sValue);
                   if(compare == 0){
@@ -163,7 +163,7 @@ expr_eq : expr_comp EQUAL expr_eq {
                   }
               }else{ yyerrorTk("Different types", "==", yylineno-1); }
         }
-        | expr_comp DIFFERENCE expr_eq { 
+        | expr_eq DIFFERENCE expr_comp { 
               if($1!=NULL && $3!=NULL && (strcmp($1->type, $3->type) == 0)){
                   int compare = strcmp($1->sValue, $3->sValue);
                   if(compare != 0){
@@ -176,7 +176,7 @@ expr_eq : expr_comp EQUAL expr_eq {
         | expr_comp { $$ = $1; }
         ;
 
-expr_comp : oper GREATER_THAN expr_comp { 
+expr_comp : expr_comp GREATER_THAN oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
                             int compare = strcmp($1->sValue, $3->sValue);
                             if(compare == 1){
@@ -195,7 +195,7 @@ expr_comp : oper GREATER_THAN expr_comp {
                             
                         }else{ yyerrorTk("Different types", ">", yylineno-1); }
           }
-          | oper GREATER_THAN_OR_EQUAL expr_comp { 
+          | expr_comp GREATER_THAN_OR_EQUAL oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
                             int compare = strcmp($1->sValue, $3->sValue);
                             if(compare == 1 || compare == 0){
@@ -213,7 +213,7 @@ expr_comp : oper GREATER_THAN expr_comp {
                             }
                         }else{ yyerrorTk("Different types", ">=", yylineno-1); }
           }
-          | oper LESS_THAN expr_comp { 
+          | expr_comp LESS_THAN oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
                             int compare = strcmp($1->sValue, $3->sValue);
                             if(compare == -1){
@@ -231,7 +231,7 @@ expr_comp : oper GREATER_THAN expr_comp {
                             }
                         }else{ yyerrorTk("Different types", "<", yylineno-1); }
           }
-          | oper LESS_THAN_OR_EQUAL expr_comp { 
+          | expr_comp LESS_THAN_OR_EQUAL oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
                             int compare = strcmp($1->sValue, $3->sValue);
                             if(compare == -1 || compare == 0){
@@ -252,7 +252,7 @@ expr_comp : oper GREATER_THAN expr_comp {
           | oper { $$ = $1; }
           ;
 
-oper : term SUM oper { 
+oper : oper SUM term { 
                           if (strcmp($1->type, "int") == 0) {
                             if ((strcmp($3->type, "int") == 0)) {
                               int sum = atoi($1->sValue) + atoi($3->sValue);
@@ -270,7 +270,7 @@ oper : term SUM oper {
                             }else { yyerrorTk("Different types", "+", yylineno-1); }
                           }
     }
-     | term SUBTRACTION oper { 
+     | oper SUBTRACTION term { 
                               if (strcmp($1->type, "int") == 0) {
                                 if ((strcmp($3->type, "int") == 0)) {
                                   int sub = atoi($1->sValue) - atoi($3->sValue);
@@ -291,7 +291,7 @@ oper : term SUM oper {
      | term { $$ = $1; }
      ;
 
-term : factor MULTIPLICATION term { 
+term : term MULTIPLICATION factor { 
                                     if (strcmp($1->type, "int") == 0) {
                                       if ((strcmp($3->type, "int") == 0)) {
                                         int mult = atoi($1->sValue) * atoi($3->sValue);
@@ -309,7 +309,7 @@ term : factor MULTIPLICATION term {
                                       }else { yyerrorTk("Different types", "*", yylineno-1); }
                                     }
       }
-     | factor DIVISION term       {
+     | term DIVISION factor       {
                                     if (strcmp($1->type, "int") == 0) {
                                       if ((strcmp($3->type, "int") == 0)) {
                                         int division = atoi($1->sValue) / atoi($3->sValue);
@@ -327,7 +327,7 @@ term : factor MULTIPLICATION term {
                                       }else{ yyerrorTk("Different types", "/", yylineno-1); }
                                     }
                                   }
-     | factor POWER term          {
+     | term POWER factor          {
                                     if (strcmp($1->type, "int") == 0) {
                                       if ((strcmp($3->type, "int") == 0)) {
                                         float powVar = pow(strtod($1->sValue, NULL), strtod($3->sValue, NULL));
@@ -346,7 +346,7 @@ term : factor MULTIPLICATION term {
                                     }
                                     
                                   }
-     | factor REST term           {
+     | term REST factor           {
                                     if (strcmp($1->type, "int") == 0) {
                                       if ((strcmp($3->type, "int") == 0)) {
                                         int rest = atoi($1->sValue) % atoi($3->sValue);
