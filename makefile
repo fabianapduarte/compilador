@@ -12,7 +12,13 @@ src/y.tab.c: src/parser.y
 clean:
 	rm -rf src/lex.yy.c src/y.tab.* src/compilador src/output.txt src/y.output
 
-run:
+compile:
+	rm -rf output output.c
 	./src/compilador < ./inputs/$(in)
-	gcc output.c -o ./output
+	if [ -f output.c ]; \
+	then \
+		gcc output.c -o output; \
+	fi;
+
+run:
 	./output
