@@ -3,5 +3,13 @@ int y = x
 bool booleano = false
 bool booleano2 = not booleano
 float f = 2.1
+int z = x / 3
 char c = 'a'
 string s = "ola mundo"
+print(1.5)
+print(15)
+print(true)
+print(false)
+print("oi")
+print('a')
+print(x)

@@ -18,7 +18,7 @@ typedef struct Stack{
 } Stack;
  
 void freeRecord(record *);
-record * createRecord(Stack*, char *, char *, char *);
+record * createRecord(Stack *, char *, char *, char *, char *);
 void renameRecord(Stack *, record *, char *);
 void exprCode(record *);
 
