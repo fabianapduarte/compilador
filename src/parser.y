@@ -8,13 +8,14 @@
 
   int yylex(void);
   int yyerror(char *s);
-  int yyerrorTk(char *s, char *t);
+  int yyerrorTk(char *s, char *t, int i);
   extern int yylineno;
   extern char * yytext;
 
   char * cat(char *, char *, char *, char *, char *);
 
   int countIntDigits(int number);
+  int countIntDigitsFloat(float);
 
   struct Stack stack;
 %}
@@ -81,19 +82,19 @@ assign : TYPE ID ASSIGN expr {
             if ((strcmp($4->type, "int") == 0)) {
               $$ = createRecord(&stack, $2, "int", $4->sValue, "int");
               free($1);
-            } else { yyerrorTk("Int required", "="); }
+            } else { yyerrorTk("Int required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "bool") == 0)) {
             if ((strcmp($4->type, "bool") == 0)) {
               $$ = createRecord(&stack, $2, "bool", $4->sValue, "int");
               free($1);
-            } else { yyerrorTk("Bool required", "="); }
+            } else { yyerrorTk("Bool required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "float") == 0)) {
             if ((strcmp($4->type, "float") == 0)) {
               $$ = createRecord(&stack, $2, "float", $4->sValue, "float");
               free($1);
-            } else { yyerrorTk("Float required", "="); }
+            } else { yyerrorTk("Float required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "char") == 0)) {
             if ((strcmp($4->type, "char") == 0)) {
@@ -101,7 +102,7 @@ assign : TYPE ID ASSIGN expr {
               sprintf(newChar, "%s", $4->sValue);
               $$ = createRecord(&stack, $2, "char", newChar, "char");
               free($1);
-            } else { yyerrorTk("Char required", "="); }
+            } else { yyerrorTk("Char required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "string") == 0)) {
             if ((strcmp($4->type, "string") == 0)) {
@@ -111,24 +112,44 @@ assign : TYPE ID ASSIGN expr {
               sprintf(newName, "%s[%d]", $2, (int) strlen($4->sValue));
               $$ = createRecord(&stack, newName, "string", newString, "char");
               free($1);
-            } else { yyerrorTk("String required", "="); }
+            } else { yyerrorTk("String required", "=", yylineno-1); }
           }
-          else { yyerrorTk("Wrong assign", "="); }
+          else { yyerrorTk("Wrong assign", "=", yylineno-1); }
          }
        ;
          
 expr : NOT expr_eq { 
-                    struct record * expr = search(&stack, $2->name);
-                    if ((expr != NULL) && strcmp(expr->type, "bool") == 0) {
-                      if(strcmp(expr->sValue, "0") == 0){
-                        setValue(expr, "bool", "1"); 
-                      }else if(strcmp(expr->sValue, "1") == 0){
-                        setValue(expr, "bool", "0");
-                      }
-                    } else { yyerrorTk("Not a boolean", $2->name); }
+                  if (($2 != NULL) && strcmp($2->type, "bool") == 0) {
+                    if(strcmp($2->sValue, "0") == 0){
+                      setValue($2, "bool", "1"); 
+                    }else if(strcmp($2->sValue, "1") == 0){
+                      setValue($2, "bool", "0");
+                    }
+                    $$ = $2;
+                  } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
       }
-     | expr_eq OR expr { }
-     | expr_eq AND expr { }
+     | expr_eq OR expr { 
+                  if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
+                    if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
+                      char * boolString = (char *) malloc(1 * sizeof(char));
+                      if((strcmp($1->sValue, "1") == 0) || (strcmp($3->sValue, "1") == 0)){
+                        sprintf(boolString, "1");
+                      }else{sprintf(boolString, "0");}
+                      $$ = createRecord(&stack, NULL, "bool", boolString, "int");
+                    }else{yyerrorTk("Not a boolean", "=", yylineno-1);}
+                  } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
+     }
+     | expr_eq AND expr { 
+                  if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
+                    if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
+                      char * boolString = (char *) malloc(1 * sizeof(char));
+                      if((strcmp($1->sValue, "1") == 0) && (strcmp($3->sValue, "1") == 0)){
+                        sprintf(boolString, "1");
+                      }else{sprintf(boolString, "0");}  
+                      $$ = createRecord(&stack, NULL, "bool", boolString, "int");
+                    }else{yyerrorTk("Not a boolean", "=", yylineno-1);}
+                  } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
+     }
      | expr_eq { $$ = $1; }
      ;
 
@@ -151,15 +172,15 @@ oper : term SUM oper {
                               char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
                               sprintf(sumString, "%d", sum);
                               $$ = createRecord(&stack, NULL, "int", sumString, "int");
-                            }else { yyerrorTk("Different types", "+"); }
+                            }else { yyerrorTk("Different types", "+", yylineno-1); }
                           }
                           else if(strcmp($1->type, "float") == 0){
                             if((strcmp($3->type, "float") == 0)){
                               float sum = atof($1->sValue) + atof($3->sValue);
-                              char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
+                              char * sumString = (char *) malloc(countIntDigitsFloat(sum) * sizeof(char));
                               sprintf(sumString, "%f", sum);
                               $$ = createRecord(&stack, NULL, "float", sumString, "float");
-                            }else { yyerrorTk("Different types", "+"); }
+                            }else { yyerrorTk("Different types", "+", yylineno-1); }
                           }
     }
      | term SUBTRACTION oper { 
@@ -170,15 +191,15 @@ oper : term SUM oper {
                                   sprintf(subString, "%d", sub);
                                   $$ = createRecord(&stack, NULL, "int", subString, "int");
                                   // freeRecord($1); freeRecord($3);
-                                }else { yyerrorTk("Different types", "+"); }
+                                }else { yyerrorTk("Different types", "-", yylineno-1); }
                               }
                               else if(strcmp($1->type, "float") == 0){
                                 if((strcmp($3->type, "float") == 0)){
                                   float sub = atof($1->sValue) - atof($3->sValue);
-                                  char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
+                                  char * subString = (char *) malloc(countIntDigitsFloat(sub) * sizeof(char));
                                   sprintf(subString, "%f", sub);
                                   $$ = createRecord(&stack, NULL, "float", subString, "float");
-                                }else { yyerrorTk("Different types", "+"); }
+                                }else { yyerrorTk("Different types", "-", yylineno-1); }
                               }
      }
      | term { $$ = $1; }
@@ -191,15 +212,15 @@ term : factor MULTIPLICATION term {
                                         char * multString = (char *) malloc(countIntDigits(mult) * sizeof(char));
                                         sprintf(multString, "%d", mult);
                                         $$ = createRecord(&stack, NULL, "int", multString, "int");
-                                      }else { yyerrorTk("Different types", "*"); }
+                                      }else { yyerrorTk("Different types", "*", yylineno-1); }
                                     }
                                     else if(strcmp($1->type, "float") == 0){
                                       if((strcmp($3->type, "float") == 0)){
                                         float mult = atof($1->sValue) * atof($3->sValue);
-                                        char * multString = (char *) malloc(countIntDigits(mult) * sizeof(char));
+                                        char * multString = (char *) malloc(countIntDigitsFloat(mult) * sizeof(char));
                                         sprintf(multString, "%f", mult);
                                         $$ = createRecord(&stack, NULL, "float", multString, "float");
-                                      }else { yyerrorTk("Different types", "*"); }
+                                      }else { yyerrorTk("Different types", "*", yylineno-1); }
                                     }
       }
      | factor DIVISION term       {
@@ -209,15 +230,15 @@ term : factor MULTIPLICATION term {
                                         char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
                                         sprintf(divisionString, "%d", division);
                                         $$ = createRecord(&stack, NULL, "int", divisionString, "int");
-                                      }else { yyerrorTk("Different types", "/"); }
+                                      }else { yyerrorTk("Different types", "/", yylineno-1); }
                                     }
                                     else if((strcmp($1->type, "float") == 0)){
                                       if((strcmp($3->type, "float") == 0)){
                                         float division = atof($1->sValue) / atof($3->sValue);
-                                        char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
+                                        char * divisionString = (char *) malloc(countIntDigitsFloat(division) * sizeof(char));
                                         sprintf(divisionString, "%f", division);
                                         $$ = createRecord(&stack, NULL, "float", divisionString, "float");
-                                      }else{ yyerrorTk("Different types", "/"); }
+                                      }else{ yyerrorTk("Different types", "/", yylineno-1); }
                                     }
                                   }
      | factor                     { $$ = $1; }
@@ -226,7 +247,7 @@ term : factor MULTIPLICATION term {
 factor : ID         {
                       struct record * id = search(&stack, $1);
                       if (id != NULL) $$ = id;
-                      else yyerrorTk("Identifier not found", $1);
+                      else yyerrorTk("Identifier not found", $1, yylineno);
                     }
         | BOOL_LIT  {
                       char * boolString = (char *) malloc(1 * sizeof(char));
@@ -252,8 +273,8 @@ int yyerror(char *msg) {
 	return 0;
 }
 
-int yyerrorTk(char *msg, char* tkn) {
-	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, tkn);
+int yyerrorTk(char *msg, char* tkn, int line) {
+	fprintf(stderr, "%d: %s at '%s'\n", line, msg, tkn);
 	exit(0);
 }
 
@@ -280,4 +301,15 @@ int countIntDigits(int number) {
     number /= 10;
     ++count;
   } while (number != 0);
+  return count;
+}
+
+int countIntDigitsFloat(float num) {
+  int count = 0;
+  int number = (int) num;
+  do {
+    number /= 10;
+    ++count;
+  } while (number != 0);
+  return count+5;
 }
