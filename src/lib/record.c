@@ -4,6 +4,7 @@
 #include <string.h>
 extern int yylineno;
 int yydebug = 0;
+
 void freeRecord(record * r) {
   if (r) {
     if (r->code != NULL) free(r->code);
@@ -18,7 +19,7 @@ void setValue(record *r, char * type, char * value) {
   r->sValue = value;
 }
 
-record * createRecord(Stack * stack, char * name, char * type, char * value) {
+record * createRecord(Stack * stack, char * name, char * type, char * value, char * code) {
   record * r = (record *) malloc(sizeof(record));
 
   if (!r) {
@@ -36,6 +37,7 @@ record * createRecord(Stack * stack, char * name, char * type, char * value) {
   
   r->type = type;
   r->sValue = value;
+  r->code = code;
 
   record * ret = search(stack, name);
   if (ret != NULL) {
@@ -66,13 +68,16 @@ void push(Stack* stack, record * value) {
 record * search(Stack* stack, char * name) {
   int size = stack->top;
   record * r;
-  while(size >= 0) {
-    r = stack->data[size];
-      if((name!=NULL) && (strcmp(name, r->name) == 0)) {
+  if (name != NULL) {
+    while (size >= 0) {
+      r = stack->data[size];
+      if (strcmp(name, r->name) == 0) {
         return r;
       }
-    size--;
+      size--;
+    }
   }
+  
   return NULL;
 }
 
