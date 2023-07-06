@@ -14,6 +14,8 @@
 
   char * cat(char *, char *, char *, char *, char *);
 
+  int countIntDigits(int number);
+
   struct Stack stack;
 %}
 
@@ -41,7 +43,7 @@
 
 program : stmts { 
                   FILE * out_file = fopen("output.c", "w");
-                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n#include \"record.h\"\n%s", $1);
+                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n%s", $1);
                 }
         ;
 
@@ -117,17 +119,25 @@ oper : term SUM oper { }
      ;
 
 term : factor MULTIPLICATION term { }
-     | factor DIVISION term { }
-     | factor { $$ = $1; }
+     | factor DIVISION term       {
+                                    if (strcmp($1->type, "int") == 0) {
+                                      if ((strcmp($3->type, "int") == 0)) {
+                                        int division = atoi($1->sValue) / atoi($3->sValue);
+                                        char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
+                                        sprintf(divisionString, "%d", division);
+                                        $$ = createRecord(&stack, NULL, "int", divisionString);
+                                      } else { yyerrorTk("Int required", "="); }
+                                    }
+                                  }
+     | factor                     { $$ = $1; }
      ;
 
-factor : ID          {
-                      printf("%s", $1);
+factor : ID         {
                       struct record * id = search(&stack, $1);
                       if (id != NULL) $$ = id;
                       else yyerrorTk("Identifier not found", $1);
-                     }
-        | BOOL_LIT   {
+                    }
+        | BOOL_LIT  {
                       char * boolString = (char *) malloc(1 * sizeof(char));
                       if ((strcmp($1, "true") == 0)) sprintf(boolString, "1");
                       else sprintf(boolString, "0");
@@ -153,7 +163,7 @@ int yyerror(char *msg) {
 
 int yyerrorTk(char *msg, char* tkn) {
 	fprintf(stderr, "%d: %s at '%s'\n", yylineno, msg, tkn);
-	return 0;
+	exit(0);
 }
 
 char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
@@ -171,4 +181,12 @@ char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
   sprintf(output, "%s%s%s%s%s", s1, s2, s3, s4, s5);
   
   return output;
+}
+
+int countIntDigits(int number) {
+  int count = 0;
+  do {
+    number /= 10;
+    ++count;
+  } while (number != 0);
 }
