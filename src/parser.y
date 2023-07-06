@@ -153,15 +153,102 @@ expr : NOT expr_eq {
      | expr_eq { $$ = $1; }
      ;
 
-expr_eq : expr_comp EQUAL expr_eq { }
-        | expr_comp DIFFERENCE expr_eq { }
+expr_eq : expr_comp EQUAL expr_eq { 
+              if($1!=NULL && $3!=NULL && (strcmp($1->type, $3->type) == 0)){
+                  int compare = strcmp($1->sValue, $3->sValue);
+                  if(compare == 0){
+                    $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                  }else{
+                    $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                  }
+              }else{ yyerrorTk("Different types", "==", yylineno-1); }
+        }
+        | expr_comp DIFFERENCE expr_eq { 
+              if($1!=NULL && $3!=NULL && (strcmp($1->type, $3->type) == 0)){
+                  int compare = strcmp($1->sValue, $3->sValue);
+                  if(compare != 0){
+                    $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                  }else{
+                    $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                  }
+              }else{ yyerrorTk("Different types", "!=", yylineno-1); }
+        }
         | expr_comp { $$ = $1; }
         ;
 
-expr_comp : oper GREATER_THAN expr_comp { }
-          | oper GREATER_THAN_OR_EQUAL expr_comp { }
-          | oper LESS_THAN expr_comp { }
-          | oper LESS_THAN_OR_EQUAL expr_comp { }
+expr_comp : oper GREATER_THAN expr_comp { 
+                        if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == 1){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else if
+                        (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == 1){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                            
+                        }else{ yyerrorTk("Different types", ">", yylineno-1); }
+          }
+          | oper GREATER_THAN_OR_EQUAL expr_comp { 
+                        if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == 1 || compare == 0){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else if
+                        (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == 1 || compare == 0){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else{ yyerrorTk("Different types", ">=", yylineno-1); }
+          }
+          | oper LESS_THAN expr_comp { 
+                        if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == -1){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else if
+                        (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == -1){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else{ yyerrorTk("Different types", "<", yylineno-1); }
+          }
+          | oper LESS_THAN_OR_EQUAL expr_comp { 
+                        if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == -1 || compare == 0){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else if
+                        (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
+                            int compare = strcmp($1->sValue, $3->sValue);
+                            if(compare == -1 || compare == 0){
+                              $$ = createRecord(&stack, NULL, "bool", "1", "int");
+                            }else{
+                              $$ = createRecord(&stack, NULL, "bool", "0", "int");
+                            }
+                        }else{ yyerrorTk("Different types", "<=", yylineno-1); }
+          }
           | oper { $$ = $1; }
           ;
 
@@ -238,6 +325,43 @@ term : factor MULTIPLICATION term {
                                         sprintf(divisionString, "%f", division);
                                         $$ = createRecord(&stack, NULL, "float", divisionString, "float");
                                       }else{ yyerrorTk("Different types", "/", yylineno-1); }
+                                    }
+                                  }
+     | factor POWER term          {
+                                    if (strcmp($1->type, "int") == 0) {
+                                      if ((strcmp($3->type, "int") == 0)) {
+                                        float powVar = pow(strtod($1->sValue, NULL), strtod($3->sValue, NULL));
+                                        char * powString = (char *) malloc(countFloatDigits(powVar) * sizeof(char));
+                                        sprintf(powString, "%f", powVar);
+                                        $$ = createRecord(&stack, NULL, "int", powString, "int");
+                                      }else { yyerrorTk("Different types", "**", yylineno-1); }
+                                    }
+                                    else if((strcmp($1->type, "float") == 0)){
+                                      if((strcmp($3->type, "float") == 0)){
+                                        float powVar = pow(strtod($1->sValue, NULL), strtod($3->sValue, NULL));
+                                        char * powString = (char *) malloc(countFloatDigits(powVar) * sizeof(char));
+                                        sprintf(powString, "%f", powVar);
+                                        $$ = createRecord(&stack, NULL, "float", powString, "float");
+                                      }else{ yyerrorTk("Different types", "**", yylineno-1); }
+                                    }
+                                    
+                                  }
+     | factor REST term           {
+                                    if (strcmp($1->type, "int") == 0) {
+                                      if ((strcmp($3->type, "int") == 0)) {
+                                        int rest = atoi($1->sValue) % atoi($3->sValue);
+                                        char * restString = (char *) malloc(countIntDigits(rest) * sizeof(char));
+                                        sprintf(restString, "%d", rest);
+                                        $$ = createRecord(&stack, NULL, "int", restString, "int");
+                                      }else { yyerrorTk("Different types", "%", yylineno-1); }
+                                    }
+                                    else if((strcmp($1->type, "float") == 0)){
+                                      if((strcmp($3->type, "float") == 0)){
+                                        float rest = atoi($1->sValue) % atoi($3->sValue);
+                                        char * restString = (char *) malloc(countFloatDigits(rest) * sizeof(char));
+                                        sprintf(restString, "%f", rest);
+                                        $$ = createRecord(&stack, NULL, "float", restString, "float");
+                                      }else{ yyerrorTk("Different types", "%", yylineno-1); }
                                     }
                                   }
      | factor                     { $$ = $1; }
