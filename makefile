@@ -14,3 +14,5 @@ clean:
 
 run:
 	./src/compilador < ./inputs/$(in)
+	gcc output.c -o ./output
+	./output
