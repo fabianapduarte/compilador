@@ -111,7 +111,7 @@ ARRAY_STRING\[((\s)?{STRING}(\s)?)(\,(\s)?{STRING}(\s)?)*\]
                             return FLOAT_LIT; }
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
-
+(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*) {  } /*Comentario*/
 .                         { yyerror("Invalid character."); }
 
 %%

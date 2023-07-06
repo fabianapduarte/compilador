@@ -95,7 +95,16 @@ assign : TYPE ID ASSIGN expr {
          }
        ;
          
-expr : NOT expr_eq { }
+expr : NOT expr_eq { 
+                    printf("a%sa\n", expr->type);
+                    if ((expr != NULL) && strcmp(expr->type, "bool") == 0) {
+                      if(strcmp(expr->sValue, "0") == 0){
+                        setValue(expr, "bool", "1"); 
+                      }else if(strcmp(expr->sValue, "1") == 0){
+                        setValue(expr, "bool", "0");
+                      }
+                    } else { yyerrorTk("Not a boolean", $2->name); }
+      }
      | expr_eq OR expr { }
      | expr_eq AND expr { }
      | expr_eq { $$ = $1; }
@@ -113,12 +122,69 @@ expr_comp : oper GREATER_THAN expr_comp { }
           | oper { $$ = $1; }
           ;
 
-oper : term SUM oper { }
-     | term SUBTRACTION oper { }
+oper : term SUM oper { 
+                          if (strcmp($1->type, "int") == 0) {
+                            if ((strcmp($3->type, "int") == 0)) {
+                              int sum = atoi($1->sValue) + atoi($3->sValue);
+                              char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
+                              sprintf(sumString, "%d", sum);
+                              $$ = createRecord(&stack, NULL, "int", sumString);
+                              // freeRecord($1); freeRecord($3);
+                            }else { yyerrorTk("Different types", "+"); }
+                          }
+                          else if(strcmp($1->type, "float") == 0){
+                            if((strcmp($3->type, "float") == 0)){
+                              float sum = atof($1->sValue) + atof($3->sValue);
+                              char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
+                              sprintf(sumString, "%f", sum);
+                              $$ = createRecord(&stack, NULL, "float", sumString);
+                              // freeRecord($1); freeRecord($3);
+                            }else { yyerrorTk("Different types", "+"); }
+                          }
+    }
+     | term SUBTRACTION oper { 
+                              if (strcmp($1->type, "int") == 0) {
+                                if ((strcmp($3->type, "int") == 0)) {
+                                  int sub = atoi($1->sValue) - atoi($3->sValue);
+                                  char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
+                                  sprintf(subString, "%d", sub);
+                                  $$ = createRecord(&stack, NULL, "int", subString);
+                                  // freeRecord($1); freeRecord($3);
+                                }else { yyerrorTk("Different types", "+"); }
+                              }
+                              else if(strcmp($1->type, "float") == 0){
+                                if((strcmp($3->type, "float") == 0)){
+                                  float sub = atof($1->sValue) - atof($3->sValue);
+                                  char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
+                                  sprintf(subString, "%f", sub);
+                                  $$ = createRecord(&stack, NULL, "float", subString);
+                                  // freeRecord($1); freeRecord($3);
+                                }else { yyerrorTk("Different types", "+"); }
+                              }
+     }
      | term { $$ = $1; }
      ;
 
-term : factor MULTIPLICATION term { }
+term : factor MULTIPLICATION term { 
+                                    if (strcmp($1->type, "int") == 0) {
+                                      if ((strcmp($3->type, "int") == 0)) {
+                                        int mult = atoi($1->sValue) * atoi($3->sValue);
+                                        char * multString = (char *) malloc(countIntDigits(mult) * sizeof(char));
+                                        sprintf(multString, "%d", mult);
+                                        $$ = createRecord(&stack, NULL, "int", multString);
+                                        // freeRecord($1); freeRecord($3);
+                                      }else { yyerrorTk("Different types", "*"); }
+                                    }
+                                    else if(strcmp($1->type, "float") == 0){
+                                      if((strcmp($3->type, "float") == 0)){
+                                        float mult = atof($1->sValue) * atof($3->sValue);
+                                        char * multString = (char *) malloc(countIntDigits(mult) * sizeof(char));
+                                        sprintf(multString, "%f", mult);
+                                        $$ = createRecord(&stack, NULL, "float", multString);
+                                        // freeRecord($1); freeRecord($3);
+                                      }else { yyerrorTk("Different types", "*"); }
+                                    }
+      }
      | factor DIVISION term       {
                                     if (strcmp($1->type, "int") == 0) {
                                       if ((strcmp($3->type, "int") == 0)) {
@@ -126,7 +192,17 @@ term : factor MULTIPLICATION term { }
                                         char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
                                         sprintf(divisionString, "%d", division);
                                         $$ = createRecord(&stack, NULL, "int", divisionString);
-                                      } else { yyerrorTk("Int required", "="); }
+                                        // freeRecord($1); freeRecord($3);
+                                      }else { yyerrorTk("Different types", "/"); }
+                                    }
+                                    else if((strcmp($1->type, "float") == 0)){
+                                      if((strcmp($3->type, "float") == 0)){
+                                        float division = atof($1->sValue) / atof($3->sValue);
+                                        char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
+                                        sprintf(divisionString, "%f", division);
+                                        $$ = createRecord(&stack, NULL, "float", divisionString);
+                                        // freeRecord($1); freeRecord($3);
+                                      }else{ yyerrorTk("Different types", "/"); }
                                     }
                                   }
      | factor                     { $$ = $1; }

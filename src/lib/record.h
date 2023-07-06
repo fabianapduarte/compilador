@@ -25,6 +25,7 @@ void exprCode(record *);
 void initialize(Stack *);
 int isEmpty(Stack*);
 int isFull(Stack*);
+void setValue(record *, char *, char *);
 void push(Stack*, record *);
 record * search(Stack*, char *);
 void printStack(Stack*);

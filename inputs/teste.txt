@@ -1,5 +1,7 @@
-int x = 3
+int x = 3-1
+int y = x
 bool booleano = false
+bool booleano2 = not booleano
 float f = 2.1
 char c = 'a'
 string s = "ola mundo"
