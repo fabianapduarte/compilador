@@ -243,22 +243,23 @@ term : factor MULTIPLICATION term {
      | factor                     { $$ = $1; }
      ;
 
-factor : casting { $$ = $1; }
-        | ID         {
-                      struct record * id = search(&stack, $1);
-                      if (id != NULL) $$ = id;
-                      else yyerrorTk("Identifier not found", $1, yylineno);
-                    }
-        | BOOL_LIT  {
-                      char * boolString = (char *) malloc(1 * sizeof(char));
-                      if ((strcmp($1, "true") == 0)) sprintf(boolString, "1");
-                      else sprintf(boolString, "0");
-                      $$ = createRecord(&stack, NULL, "bool", boolString, "int");
-                    }
-       | INT_LIT    { $$ = createRecord(&stack, NULL, "int", $1, "int"); }
-       | FLOAT_LIT  { $$ = createRecord(&stack, NULL, "float", $1, "float"); }
-       | STR_LIT    { $$ = createRecord(&stack, NULL, "string", $1, "char"); }
-       | CHAR_LIT   { $$ = createRecord(&stack, NULL, "char", $1, "char"); }
+factor : '(' expr ')' { $$ = $2; }
+       | casting      { $$ = $1; }
+       | ID           {
+                        struct record * id = search(&stack, $1);
+                        if (id != NULL) $$ = id;
+                        else yyerrorTk("Identifier not found", $1, yylineno);
+                      }
+       | BOOL_LIT     {
+                        char * boolString = (char *) malloc(1 * sizeof(char));
+                        if ((strcmp($1, "true") == 0)) sprintf(boolString, "1");
+                        else sprintf(boolString, "0");
+                        $$ = createRecord(&stack, NULL, "bool", boolString, "int");
+                      }
+       | INT_LIT      { $$ = createRecord(&stack, NULL, "int", $1, "int"); }
+       | FLOAT_LIT    { $$ = createRecord(&stack, NULL, "float", $1, "float"); }
+       | STR_LIT      { $$ = createRecord(&stack, NULL, "string", $1, "char"); }
+       | CHAR_LIT     { $$ = createRecord(&stack, NULL, "char", $1, "char"); }
        ;
 
 casting : TYPE '(' expr ')' {

@@ -1,4 +1,4 @@
-int x = 3-1
+int x = 4 + (3 - 1)
 int y = x
 bool booleano = false
 bool booleano2 = not booleano
