@@ -35,8 +35,10 @@
 %left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
 %type <sValue> stmt stmts
-%type <rec> assign print casting
-%type <rec> expr expr_eq expr_comp oper term factor
+%type <rec> decl_var print casting decl_const decl_global assign function args args_aux
+%type <rec> conditional if_then elif_list elif else switch cases case
+%type <rec> loop for while do_while
+%type <rec> expr expr_eq expr_comp oper term factor oper_incr_decr
 
 %start program
 
@@ -52,7 +54,7 @@ stmts :            { $$ = ""; }
       | stmt stmts { $$ = cat($1, "\n", $2, "", ""); }
       ;
       
-stmt : assign {
+stmt : decl_var {
         char * code, * newValue;
         if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
         else if (strcmp($1->type, "string") == 0) newValue = cat("\"", $1->sValue, "\"", "", "");
@@ -79,12 +81,17 @@ stmt : assign {
         createRecord(&stack, $2, "string", $2, "char");
         $$ = code;
      }
+     | assign { $$ = ""; }
+     | decl_const { $$ = ""; }
+     | decl_global { $$ = ""; }
+     | function { $$ = ""; }
+     | conditional { $$ = ""; }
+     | loop { $$ = ""; }
      ;
 
-print : PRINT '(' expr ')' { $$ = $3; }
-      ;
+print : PRINT '(' expr ')' { $$ = $3; } ;
 
-assign : TYPE ID ASSIGN expr {
+decl_var : TYPE ID ASSIGN expr {
           if ((strcmp($1, "int") == 0)) {
             if ((strcmp($4->type, "int") == 0)) {
               $$ = createRecord(&stack, $2, "int", $4->sValue, "int");
@@ -424,6 +431,61 @@ casting : TYPE '(' expr ')' {
                               else { yyerrorTk("Unsupported conversion", $1, yylineno); }
                             }
         ;
+
+assign : ID ASSIGN expr { } ; 
+
+decl_const : CONST TYPE ID ASSIGN expr { } ;
+
+decl_global : GLOBAL TYPE ID ASSIGN expr { } ;
+
+function : TYPE FUNC ID '(' args ')' '{' stmts '}' { } ;
+
+args :          { }
+     | args_aux { $$ = $1; }
+     ;
+
+args_aux : TYPE ID              { }
+         | TYPE ID ',' args_aux { }
+         ;
+
+conditional : if_then                { $$ = $1; }
+            | if_then else           { $$ = $1; }
+            | if_then elif_list else { $$ = $1; }
+            | switch                 { $$ = $1; }
+            ;
+
+else : ELSE '{' stmts '}' {  } ;
+
+elif_list : elif           { $$ = $1; }
+          | elif elif_list { $$ = $1; }
+          ;
+
+elif : ELIF '(' expr ')' '{' stmts '}' { } ;
+
+if_then : IF '(' expr ')' '{' stmts '}' { printf("IF (%s) {}", $3->code); } ;
+
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { } ;
+
+cases : case | case cases { } ;
+
+case : CASE ID ':' stmts BREAK { } ;
+
+loop : for      { $$ = $1; }
+     | while    { $$ = $1; }
+     | do_while { $$ = $1; }
+     ;
+
+for : FOR '(' decl_var ';' expr ';' oper_incr_decr ')' '{' stmts '}' { } ;
+
+while : WHILE '(' expr ')' '{' stmts '}' {  } ;
+
+do_while : DO '{' stmts '}' WHILE '(' expr ')' { } ;
+
+oper_incr_decr : ID INCREMENT { }
+               | ID DECREMENT { } 
+               | INCREMENT ID { }
+               | DECREMENT ID { }
+               ;
 
 %%
 
