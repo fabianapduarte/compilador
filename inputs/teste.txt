@@ -1,3 +1,31 @@
-int x = 3
-int z = 3
+int x = 4 + 3 - 1
+int d = 4 + 3 * 2
+int p = (4 + 3) * 2
+int l = 4 + 3 / 2
+int k = (4 + 3) / 2
+print(d)
+print(p)
+print(l)
+print(k)
+int y = x
+bool booleano = false
+bool booleano2 = not booleano
+float f = 2.1
+int floatConversion = int(3.2)
+string intToString = string(1)
+string floatToString = string(1.1)
+string charToString = string('c')
+//string stringToString = string("fabiana")
+
+int z = x / 3
+char c = 'a'
+string s = "ola mundo"
+print(1.5)
+print(15)
+int af = input()
+print(af)
+print(true)
+print(false)
+print("oi")
+print('a')
 print(x)
