@@ -20,6 +20,7 @@
   int countFloatDigits(float);
 
   int ifGoto = 0;
+  int loopGoto = 0;
 
   struct Stack stack;
 %}
@@ -38,10 +39,9 @@
 %left OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <sValue> stmt stmts if_then conditional else elif elif_list
+%type <sValue> stmt stmts if_then conditional else elif elif_list loop while for do_while
 %type <rec> decl_var println print casting decl_const decl_global assign function args args_aux
 %type <rec> switch cases case
-%type <rec> loop for while do_while
 %type <rec> expr expr_eq expr_comp oper term factor oper_incr_decr
 
 %start program
@@ -110,7 +110,7 @@ stmt : decl_var {
      | decl_global { $$ = ""; }
      | function { $$ = ""; }
      | conditional { $$ = $1; }
-     | loop { $$ = ""; }
+     | loop { $$ = $1; }
      ;
 
 println : PRINT '(' expr ')' { $$ = $3; } ;
@@ -560,9 +560,34 @@ loop : for      { $$ = $1; }
 
 for : FOR '(' decl_var ';' expr ';' oper_incr_decr ')' '{' stmts '}' { } ;
 
-while : WHILE '(' expr ')' '{' stmts '}' {  } ;
+while : WHILE '(' expr ')' '{' stmts '}' { 
+                                          char * numString = (char *) malloc(countIntDigits(loopGoto) * sizeof(char));
+                                          sprintf(numString, "%d", loopGoto);
 
-do_while : DO '{' stmts '}' WHILE '(' expr ')' { } ;
+                                          char * code = cat("while", numString, ":\n", "", "");
+
+                                          code = cat(code, "if", "(", $3->code, ")");
+                                          code = cat(code, "{\n", $6, "goto while", numString);
+                                          code = cat(code, ";", "\n}", "\n", "");
+
+                                          free(numString);
+                                          loopGoto++;
+                                          $$ = code;
+                                         } ;
+
+do_while : DO '{' stmts '}' WHILE '(' expr ')' {
+                                                char * numString = (char *) malloc(countIntDigits(loopGoto) * sizeof(char));
+                                                sprintf(numString, "%d", loopGoto);
+
+                                                char * code = cat("doWhile", numString, ":\n", "", "");
+                                                code = cat(code, $3, "if(", $7->code, ")");
+                                                code = cat(code, "{", "goto doWhile", numString, ";");
+                                                code = cat(code, "}", "", "", "");
+
+                                                free(numString);
+                                                loopGoto++;
+                                                $$ = code;
+                                               } ;
 
 oper_incr_decr : ID INCREMENT { 
                         struct record * id = search(&stack, $1);
