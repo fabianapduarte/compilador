@@ -1,0 +1,8 @@
+int i = 12
+float j = 12.2
+//print("Digite seu nome: ")
+//string nome = input()
+//println("Seu nome é: ")
+//println(nome)
+println(i++)
+println(i)

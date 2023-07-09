@@ -20,7 +20,7 @@ void setValue(record *r, char * type, char * value, char * code) {
   r->code = code;
 }
 
-record * createRecord(Stack * stack, char * name, char * type, char * value, char * code) {
+record * createRecord(Stack * stack, char * name, char * type, char * value, char * code, char * input) {
   record * r = (record *) malloc(sizeof(record));
 
   if (!r) {
@@ -34,6 +34,12 @@ record * createRecord(Stack * stack, char * name, char * type, char * value, cha
     r->name = nameTemp;
   } else {
     r->name = name;
+  }
+
+  if (input == NULL) {
+    r->input = "false";
+  } else {
+    r->input = input;
   }
   
   r->type = type;
@@ -55,6 +61,16 @@ record * createRecord(Stack * stack, char * name, char * type, char * value, cha
 
 void renameRecord(Stack * stack, record * r, char * name){
   r->name = name;
+}
+
+record * copyRecord(record * origem, record * destino){
+  destino->code = origem->code;
+  destino->type = origem->type;
+  destino->name = origem->name;
+  destino->sValue = origem->sValue;
+  destino->input = origem->input;
+
+  return destino;
 }
 
 void initialize(Stack* stack) {

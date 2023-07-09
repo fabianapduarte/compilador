@@ -5,7 +5,7 @@ int terceiroIntervalo = 0;
 int quartoIntervalo = 0;
 
 int leitura = 0;
-input(leitura);
+int leitura = input();
 
 while(leitura >= 0) {
       if(leitura >= 0 && leitura <= 25) {

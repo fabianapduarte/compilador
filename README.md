@@ -40,11 +40,13 @@ string(<int>) - string(<float>) - string(<char>)
     - Operadores OU, AND
         - or, and (Binário)
 
-- Função de escrita
-    - `print()`
+- Funções de escrita
+    - `print()` - não adiciona quebra de linha
+    - `println()` - adiciona quebra de linha
 - Função de leitura
     - `input()`
 - Comentários são realizados com //
+    - `//Isto é um comentário na linguagem`
 ---
 
 ## Exemplos de programas

@@ -7,7 +7,8 @@ struct record {
   char * code;     /* field for storing the output code */
   char * type;     /* field for type code */
   char * name;     /* field for variable name */
-  char * sValue;   /* field for variable name */
+  char * sValue;   /* field for variable value */
+  char * input;    /* field for variable input */
 };
 
 typedef struct record record;
@@ -18,8 +19,9 @@ typedef struct Stack{
 } Stack;
  
 void freeRecord(record *);
-record * createRecord(Stack *, char *, char *, char *, char *);
+record * createRecord(Stack *, char *, char *, char *, char *, char *);
 void renameRecord(Stack *, record *, char *);
+record * copyRecord(record * origem, record * destino);
 
 void initialize(Stack *);
 int isEmpty(Stack*);

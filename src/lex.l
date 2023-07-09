@@ -34,7 +34,8 @@ OBJECT\"object\"
 "while"                   { return(WHILE); }
 "break"                   { return(BREAK); }
 "continue"                { return(CONTINUE); }
-"print"                   { return(PRINT); }
+"println"                 { return(PRINT); }
+"print"                   { return(PRINTNOBREAKLINE); }
 "func"                    { return(FUNC); }
 "return"                  { return(RETURN); }
 "global"                  { return(GLOBAL); }
