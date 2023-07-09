@@ -26,7 +26,7 @@ string(<int>) - string(<float>) - string(<char>)
     - Incremento e decremento
         - `++, --` (Unário - pós-fixado)
     - Negação de sinal, incremento e decremento e negação
-        - `-, ++, --`, not (Unário - prefixado)
+        - `-, ++, --, not` (Unário - prefixado)
     - Exponenciação
         - `**` (Binário)
     - Multiplicação, divisão e módulo

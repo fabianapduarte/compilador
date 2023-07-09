@@ -1,14 +1,12 @@
 int i = 12;
 float j = 12.2
-//print("Digite seu nome: ")
-//int num = input()
+print("Digite seu nome: ")
+int num = input()
 //println("Seu nome é: ")
 //println(nome)
 println(i++)
 println(i)
-if(27 > 25 and 50 <= 50){
-    println(4)
-    if(4<=5){
-        println(4)
-    }
+// and 50 <= 50
+if(4 < num){
+    println("Teste")
 }

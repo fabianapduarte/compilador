@@ -1,10 +1,11 @@
 
 int primeiroIntervalo = 0;
-int segundoIntervalo = 0;
+int segundoIntervalo  = 0;
 int terceiroIntervalo = 0;
-int quartoIntervalo = 0;
+int quartoIntervalo   = 0;
 
 int leitura = 0;
+print("Digite um número: ")
 int leitura = input();
 
 while(leitura >= 0) {
@@ -20,5 +21,6 @@ while(leitura >= 0) {
       if(leitura > 75 and leitura <= 100) {
           quartoIntervalo = quartoIntervalo + 1;
       }
-      input(leitura);
+      print("Digite outro: ")
+      int leitura = input();
 }
