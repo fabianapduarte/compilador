@@ -8,16 +8,16 @@ int leitura = 0;
 int leitura = input();
 
 while(leitura >= 0) {
-      if(leitura >= 0 && leitura <= 25) {
+      if(leitura >= 0 and leitura <= 25) {
           primeiroIntervalo = primeiroIntervalo + 1;
       } 
-      if(leitura > 25 && leitura <= 50) {
+      if(leitura > 25 and leitura <= 50) {
           segundoIntervalo = segundoIntervalo + 1;
       }
-      if(leitura > 50 && leitura <= 75) {
+      if(leitura > 50 and leitura <= 75) {
           terceiroIntervalo = terceiroIntervalo + 1;
       }
-      if(leitura > 75 && leitura <= 100) {
+      if(leitura > 75 and leitura <= 100) {
           quartoIntervalo = quartoIntervalo + 1;
       }
       input(leitura);

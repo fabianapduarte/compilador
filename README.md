@@ -24,21 +24,21 @@ string(<int>) - string(<float>) - string(<char>)
     - global <_tipo_> 
 - Operadores lógicos, aritméticos e relacionais
     - Incremento e decremento
-        - ++, -- (Unário - pós-fixado)
+        - `++, --` (Unário - pós-fixado)
     - Negação de sinal, incremento e decremento e negação
-        - -, ++, --, not (Unário - prefixado)
+        - `-, ++, --`, not (Unário - prefixado)
     - Exponenciação
-        - ** (Binário)
+        - `**` (Binário)
     - Multiplicação, divisão e módulo
-        - *, /, % (Binário)
+        - `*, /, %` (Binário)
     - Soma e subtração
-        - +, – (Binário)
+        - `+, –` (Binário)
     - Menor, maior, menor ou igual e maior ou igual
-        - <, >, <=, >= (Binário)
+        - `<, >, <=, >=` (Binário)
     - Igualdade e desigualdade
-        - ==, !=  (Binário)
+        - `==, !=`  (Binário)
     - Operadores OU, AND
-        - or, and (Binário)
+        - `or, and` (Binário)
 
 - Funções de escrita
     - `print()` - não adiciona quebra de linha

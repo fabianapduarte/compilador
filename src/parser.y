@@ -14,6 +14,8 @@
 
   char * cat(char *, char *, char *, char *, char *);
 
+  int comparacao(char *, char *);
+  int comparacaoFloat(char *, char *);
   int countIntDigits(int);
   int countFloatDigits(float);
 
@@ -34,9 +36,9 @@
 %left OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <sValue> stmt stmts
+%type <sValue> stmt stmts if_then conditional
 %type <rec> decl_var println print casting decl_const decl_global assign function args args_aux
-%type <rec> conditional if_then elif_list elif else switch cases case
+%type <rec> elif_list elif else switch cases case
 %type <rec> loop for while do_while
 %type <rec> expr expr_eq expr_comp oper term factor oper_incr_decr
 
@@ -99,7 +101,7 @@ stmt : decl_var {
      | decl_const { $$ = ""; }
      | decl_global { $$ = ""; }
      | function { $$ = ""; }
-     | conditional { $$ = ""; }
+     | conditional { $$ = $1; }
      | loop { $$ = ""; }
      ;
 
@@ -207,7 +209,7 @@ expr_eq : expr_eq EQUAL expr_comp {
 
 expr_comp : expr_comp GREATER_THAN oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacao($1->sValue, $3->sValue);
                             if(compare == 1){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -215,7 +217,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             }
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacaoFloat($1->sValue, $3->sValue);
                             if(compare == 1){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -226,7 +228,7 @@ expr_comp : expr_comp GREATER_THAN oper {
           }
           | expr_comp GREATER_THAN_OR_EQUAL oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacao($1->sValue, $3->sValue);
                             if(compare == 1 || compare == 0){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -234,7 +236,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             }
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacaoFloat($1->sValue, $3->sValue);
                             if(compare == 1 || compare == 0){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -244,7 +246,7 @@ expr_comp : expr_comp GREATER_THAN oper {
           }
           | expr_comp LESS_THAN oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacao($1->sValue, $3->sValue);
                             if(compare == -1){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -252,7 +254,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             }
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacaoFloat($1->sValue, $3->sValue);
                             if(compare == -1){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -262,7 +264,7 @@ expr_comp : expr_comp GREATER_THAN oper {
           }
           | expr_comp LESS_THAN_OR_EQUAL oper { 
                         if(($1!=NULL && strcmp($1->type, "int") == 0) && ($3!=NULL && strcmp($3->type, "int") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacao($1->sValue, $3->sValue);
                             if(compare == -1 || compare == 0){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -270,7 +272,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             }
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
-                            int compare = strcmp($1->sValue, $3->sValue);
+                            int compare = comparacaoFloat($1->sValue, $3->sValue);
                             if(compare == -1 || compare == 0){
                               $$ = createRecord(&stack, NULL, "bool", "1", "int", NULL);
                             }else{
@@ -467,7 +469,7 @@ args_aux : TYPE ID              { }
 conditional : if_then                { $$ = $1; }
             | if_then else           { $$ = $1; }
             | if_then elif_list else { $$ = $1; }
-            | switch                 { $$ = $1; }
+            /* | switch                 { $$ = $1; } */
             ;
 
 else : ELSE '{' stmts '}' {  } ;
@@ -478,9 +480,16 @@ elif_list : elif           { $$ = $1; }
 
 elif : ELIF '(' expr ')' '{' stmts '}' { } ;
 
-if_then : IF '(' expr ')' '{' stmts '}' { printf("IF (%s) {}", $3->code); } ;
+if_then : IF '(' expr ')' '{' stmts '}' { 
+                                          if(strcmp($3->sValue, "1") == 0){
+                                            
+                                          }
+                                          char * code = cat("if", "(", $3->sValue, ")", "");
+                                          code = cat(code, "{", $6, "}", "");
+                                          $$ = code;
+                                        } ;
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { } ;
+/* switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { } ; */
 
 cases : case | case cases { } ;
 
@@ -583,6 +592,24 @@ char * cat(char * s1, char * s2, char * s3, char * s4, char * s5){
   sprintf(output, "%s%s%s%s%s", s1, s2, s3, s4, s5);
   
   return output;
+}
+
+int comparacao(char * valor1, char * valor2){
+  if(atoi(valor1) > atoi(valor2)){
+    return 1;
+  }else if(atoi(valor1) < atoi(valor2)){
+    return -1;
+  }
+  return 0;
+}
+
+int comparacaoFloat(char * valor1, char * valor2){
+  if(atof(valor1) > atof(valor2)){
+    return 1;
+  }else if(atof(valor1) < atof(valor2)){
+    return -1;
+  }
+  return 0;
 }
 
 int countIntDigits(int number) {

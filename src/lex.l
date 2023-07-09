@@ -107,6 +107,7 @@ OBJECT\"object\"
                             return FLOAT_LIT; }
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
+";"                       {  } 
 (\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*) {  } /*Comentario*/
 .                         { yyerror("Invalid character."); }
 
