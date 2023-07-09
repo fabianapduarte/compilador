@@ -19,6 +19,8 @@
   int countIntDigits(int);
   int countFloatDigits(float);
 
+  int ifGoto = 0;
+
   struct Stack stack;
 %}
 
@@ -36,9 +38,9 @@
 %left OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <sValue> stmt stmts if_then conditional
+%type <sValue> stmt stmts if_then conditional else elif elif_list
 %type <rec> decl_var println print casting decl_const decl_global assign function args args_aux
-%type <rec> elif_list elif else switch cases case
+%type <rec> switch cases case
 %type <rec> loop for while do_while
 %type <rec> expr expr_eq expr_comp oper term factor oper_incr_decr
 
@@ -48,7 +50,7 @@
 
 program : stmts { 
                   FILE * out_file = fopen("output.c", "w");
-                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n%s\n}", $1);
+                  fprintf(out_file, "#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n%s}", $1);
                 }
         ;
 
@@ -92,9 +94,15 @@ stmt : decl_var {
        }
      | TYPE ID ASSIGN INPUT '(' ')' {
         char * code;
-        code = cat("char * ", $2, " = (char *) malloc(100 * sizeof(char));\n", "", "");
-        code = cat(code, "scanf(\"%s\", ", $2, ");", "");
-        createRecord(&stack, $2, "string", $2, "char", "true");
+        if(strcmp($1, "int")==0){
+          code = cat("int ", $2, ";\n", "", "");
+          code = cat(code, "scanf(\"%i\", &", $2, ");", "");
+        }else{
+          code = cat("char * ", $2, " = (char *) malloc(100 * sizeof(char));\n", "", "");
+          code = cat(code, "scanf(\"%s\", ", $2, ");", "");
+        }
+        
+        createRecord(&stack, $2, $1, $2, "char", "true");
         $$ = code;
      }
      | assign { $$ = ""; }
@@ -479,31 +487,63 @@ args_aux : TYPE ID              { }
          | TYPE ID ',' args_aux { }
          ;
 
-conditional : if_then                { $$ = $1; }
-            | if_then else           { $$ = $1; }
-            | if_then elif_list else { $$ = $1; }
+conditional : if_then                { 
+                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
+                                      sprintf(numString, "%d", ifGoto);
+
+                                      char * code = cat($1, "", "", "", "");
+                                      ifGoto++;
+                                      $$ = cat(code, "exit", numString, ":\n", ";\n"); 
+                                     }
+            | if_then else           { 
+                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
+                                      sprintf(numString, "%d", ifGoto);
+
+                                      char * code = cat($1, $2, "", "", "");
+                                      ifGoto++;
+                                      $$ = cat(code, "exit", numString, ":\n", ";\n");
+                                     }
+            | if_then elif_list else { 
+                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
+                                      sprintf(numString, "%d", ifGoto);
+
+                                      char * code = cat($1, $2, $3, "", ""); 
+                                      ifGoto++;
+                                      $$ = cat(code, "exit", numString, ":\n", ";\n"); 
+                                      }
             /* | switch                 { $$ = $1; } */
             ;
 
-else : ELSE '{' stmts '}' { 
-                            // char * code = cat("if", "(", $3->sValue, ")", "");
-                            // code = cat(code, "{", $3, "}", "");
-                            // $$ = code;
-                          } ;
-
-
 elif_list : elif           { $$ = $1; }
-          | elif elif_list { $$ = $1; }
+          | elif elif_list { 
+                             $$ = cat($1, $2, "", "", ""); 
+                           }
           ;
 
-elif : ELIF '(' expr ')' '{' stmts '}' { } ;
+elif : ELIF '(' expr ')' '{' stmts '}' { 
+                                        char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
+                                        sprintf(numString, "%d", ifGoto);
+
+                                        char * code = cat("if", "(", $3->code, ")", "");
+                                        code = cat(code, "{\n", $6, "goto exit", numString);
+                                        code = cat(code, ";", "\n}", "\n", "");
+                                        free(numString);
+                                        $$ = code;
+                                       } ;
+
+else : ELSE '{' stmts '}' {  
+                            char * code = cat("\n", $3, "", "", "");
+                            $$ = code;
+                          } ;
 
 if_then : IF '(' expr ')' '{' stmts '}' { 
-                                          // if(strcmp($3->sValue, "1") == 0){
-                                            
-                                          // }
+                                          char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
+                                          sprintf(numString, "%d", ifGoto);
+
                                           char * code = cat("if", "(", $3->code, ")", "");
-                                          code = cat(code, "{\n", $6, "}", "");
+                                          code = cat(code, "{\n", $6, "goto exit", numString);
+                                          code = cat(code, ";", "\n}", "\n", "");
+                                          free(numString);
                                           $$ = code;
                                         } ;
 

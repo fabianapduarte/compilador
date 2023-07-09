@@ -7,6 +7,15 @@ int num = input()
 println(i++)
 println(i)
 // and 50 <= 50
-if(4 < num){
-    println("Teste")
+if((6 < num)){
+    println("maior")
+}
+elif((5 < num)){
+   println("maior q 5")
+}
+elif((4 < num)){
+   println("maior q 4")
+}
+else{
+   println("menor")
 }
