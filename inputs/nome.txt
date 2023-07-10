@@ -1,11 +1,13 @@
 int i = 12;
 float j = 12.2
-print("Digite seu nome: ")
+print("Digite um numero: ")
 int num = input()
 do{
-    println("boa")
-}while(num >2)
-
+    println("a")
+}while(num<10)
+//while(num<10){
+ //   println("a")
+//}
 //println("Seu nome é: ")
 //println(nome)
 //println(i++)
@@ -14,12 +16,9 @@ do{
 //if((6 < num)){
 //    println("maior")
 //}
-//elif((5 < num)){
-//   println("maior q 5")
-//}
 //elif((4 < num)){
-//   println("maior q 4")
+ // println("maior q 6")
 //}
 //else{
-//   println("menor")
+ // println("menor")
 //}

@@ -19,7 +19,8 @@
   int countIntDigits(int);
   int countFloatDigits(float);
 
-  int ifGoto = 0;
+  int ifDecisao = 0;
+  int ifCondicao = 0;
   int loopGoto = 0;
 
   struct Stack stack;
@@ -617,28 +618,32 @@ args_aux : TYPE ID              { }
          ;
 
 conditional : if_then                { 
-                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
-                                      sprintf(numString, "%d", ifGoto);
+                                      char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                      sprintf(stringDecisao, "%d", ifDecisao);
 
-                                      char * code = cat($1, "", "", "", "");
-                                      ifGoto++;
-                                      $$ = cat(code, "exit", numString, ":\n", ";\n"); 
+                                      char * code = cat($1, "exitDecisao", stringDecisao, ":\n", ";");
+                                      ifDecisao++;
+                                      $$ = code;
                                      }
             | if_then else           { 
-                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
-                                      sprintf(numString, "%d", ifGoto);
+                                      char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                      sprintf(stringDecisao, "%d", ifDecisao);
 
-                                      char * code = cat($1, $2, "", "", "");
-                                      ifGoto++;
-                                      $$ = cat(code, "exit", numString, ":\n", ";\n");
+                                      char * code = cat($1, "else", stringDecisao, ":", $2);
+                                      code = cat(code, "exitDecisao", stringDecisao, ":\n", ";");
+                                      // char * code = cat($1, $2, "", "", "");
+                                      ifDecisao++;
+                                      $$ = code;
                                      }
             | if_then elif_list else { 
-                                      char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
-                                      sprintf(numString, "%d", ifGoto);
+                                      char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                      sprintf(stringDecisao, "%d", ifDecisao);
 
-                                      char * code = cat($1, $2, $3, "", ""); 
-                                      ifGoto++;
-                                      $$ = cat(code, "exit", numString, ":\n", ";\n"); 
+                                      char * code = cat($1, $2, "else", stringDecisao, ":");
+                                      code = cat(code, $3, "exitDecisao", stringDecisao, ":\n;");
+                                      // char * code = cat($1, $2, "", "", "");
+                                      ifDecisao++;
+                                      $$ = code;
                                       }
             | switch                 { }
             ;
@@ -650,13 +655,23 @@ elif_list : elif           { $$ = $1; }
           ;
 
 elif : ELIF '(' expr ')' '{' stmts '}' { 
-                                        char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
-                                        sprintf(numString, "%d", ifGoto);
+                                        char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                        sprintf(stringDecisao, "%d", ifDecisao);
 
-                                        char * code = cat("if", "(", $3->code, ")", "");
-                                        code = cat(code, "{\n", $6, "goto exit", numString);
-                                        code = cat(code, ";", "\n}", "\n", "");
-                                        free(numString);
+                                        char * numCondicao = (char *) malloc(countIntDigits(ifCondicao) * sizeof(char));
+                                        sprintf(numCondicao, "%d", ifCondicao);
+
+                                        char * code = cat("if", numCondicao, ":", "\n", "");
+                                        code = cat(code, "if", "(", $3->code, ")");
+                                        code = cat(code, "{", "goto in", numCondicao, ";}\n");
+                                        code = cat(code, "goto ", "exit", numCondicao, ";\n");
+                                        code = cat(code, "in", numCondicao, ":\n", "");
+                                        code = cat(code, "{", $6, "", "");
+                                        code = cat(code, "goto exitDecisao", stringDecisao, ";}\n", "");
+                                        code = cat(code, "exit", numCondicao, ":\n", ";\n");
+                                        ifCondicao++;
+                                        free(stringDecisao);
+                                        free(numCondicao);
                                         $$ = code;
                                        } ;
 
@@ -666,13 +681,23 @@ else : ELSE '{' stmts '}' {
                           } ;
 
 if_then : IF '(' expr ')' '{' stmts '}' { 
-                                          char * numString = (char *) malloc(countIntDigits(ifGoto) * sizeof(char));
-                                          sprintf(numString, "%d", ifGoto);
+                                          char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                          sprintf(stringDecisao, "%d", ifDecisao);
 
-                                          char * code = cat("if", "(", $3->code, ")", "");
-                                          code = cat(code, "{\n", $6, "goto exit", numString);
-                                          code = cat(code, ";", "\n}", "\n", "");
-                                          free(numString);
+                                          char * numCondicao = (char *) malloc(countIntDigits(ifCondicao) * sizeof(char));
+                                          sprintf(numCondicao, "%d", ifCondicao);
+
+                                          char * code = cat("if", numCondicao, ":", "\n", "");
+                                          code = cat(code, "if", "(", $3->code, ")");
+                                          code = cat(code, "{", "goto in", numCondicao, ";}\n");
+                                          code = cat(code, "goto ", "exit", numCondicao, ";\n");
+                                          code = cat(code, "in", numCondicao, ":\n", "");
+                                          code = cat(code, "{", $6, "", "");
+                                          code = cat(code, "goto exitDecisao", stringDecisao, ";}\n", "");
+                                          code = cat(code, "exit", numCondicao, ":\n", ";\n");
+                                          ifCondicao++;
+                                          free(stringDecisao);
+                                          free(numCondicao);
                                           $$ = code;
                                         } ;
 
@@ -690,16 +715,20 @@ loop : for      { $$ = $1; }
 for : FOR '(' decl_var ';' expr ';' oper_incr_decr ')' '{' stmts '}' { } ;
 
 while : WHILE '(' expr ')' '{' stmts '}' { 
-                                          char * numString = (char *) malloc(countIntDigits(loopGoto) * sizeof(char));
-                                          sprintf(numString, "%d", loopGoto);
+                                          char * numLoop = (char *) malloc(countIntDigits(loopGoto) * sizeof(char));
+                                          sprintf(numLoop, "%d", loopGoto);
 
-                                          char * code = cat("while", numString, ":\n", "", "");
+                                          // char * code = cat("while", numString, ":\n", "", "");
 
-                                          code = cat(code, "if", "(", $3->code, ")");
-                                          code = cat(code, "{\n", $6, "goto while", numString);
-                                          code = cat(code, ";", "\n}", "\n", "");
-
-                                          free(numString);
+                                          // code = cat(code, "if", "(", $3->code, ")");
+                                          // code = cat(code, "{\n", $6, "goto while", numString);
+                                          // code = cat(code, ";", "\n}", "\n", "");
+                                          char * code = cat("while", numLoop, ":\n", "", "");
+                                          code = cat(code, "if", "(!(", $3->code, "))");
+                                          code = cat(code, "{", "goto exit", numLoop, ";}\n");
+                                          code = cat(code, "{", $6, "goto while", numLoop);
+                                          code = cat(code, ";}\n", "exit", numLoop, ":;");
+                                          free(numLoop);
                                           loopGoto++;
                                           $$ = code;
                                          } ;
