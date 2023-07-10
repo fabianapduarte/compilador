@@ -61,8 +61,13 @@ stmt : decl_var {
         if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
         else if (strcmp($1->type, "string") == 0) newValue = cat("\"", $1->sValue, "\"", "", "");
         else newValue = cat($1->sValue, "", "", "", "");
-        code = cat($1->code, " ", $1->name, " = ", newValue);
-        code = cat(code, ";", "", "", "");
+
+        if (strcmp($1->type, "string") == 0) code = cat($1->code, " = ", newValue, ";", "");
+        else {
+          code = cat($1->code, " ", $1->name, " = ", newValue);
+          code = cat(code, ";", "", "", "");
+        }
+
         $$ = code;
         free(newValue);
        }  
@@ -139,13 +144,13 @@ decl_var : TYPE ID ASSIGN expr {
             if ((strcmp($4->type, "string") == 0)) {
               char * newString = (char *) malloc(strlen($4->sValue) * sizeof(char));
               sprintf(newString, "%s", $4->sValue);
-              char * newName = (char *) malloc((strlen($2) + 3) * sizeof(char));
-              sprintf(newName, "%s[%d]", $2, (int) strlen($4->sValue));
-              $$ = createRecord(&stack, newName, "string", newString, "char", NULL);
+              char * code = (char *) malloc((strlen($2) + 8) * sizeof(char));
+              sprintf(code, "char %s[%d]", $2, (int) strlen($4->sValue));
+              $$ = createRecord(&stack, $2, "string", newString, code, NULL);
               free($1);
             } else { yyerrorTk("String required", "=", yylineno-1); }
           }
-          else { yyerrorTk("Wrong assign", "=", yylineno-1); }
+          else { yyerrorTk("Wrong variable declaration", "=", yylineno-1); }
          }
        ;
          
@@ -463,7 +468,41 @@ casting : TYPE '(' expr ')' {
                             }
         ;
 
-assign : ID ASSIGN expr { } ; 
+assign : ID ASSIGN expr {
+          struct record * id = search(&stack, $1);
+          if ((strcmp(id->type, "int") == 0)) {
+            if ((strcmp($3->type, "int") == 0)) {
+              setValue(id, "int", $3->sValue, "int");
+              $$ = id;
+            } else { yyerrorTk("Int required", "=", yylineno-1); }
+          }
+          else if ((strcmp(id->type, "bool") == 0)) {
+            if ((strcmp($3->type, "bool") == 0)) {
+              setValue(id, "bool", $3->sValue, "int");
+              $$ = id;
+            } else { yyerrorTk("Bool required", "=", yylineno-1); }
+          }
+          else if ((strcmp(id->type, "float") == 0)) {
+            if ((strcmp($3->type, "float") == 0)) {
+              setValue(id, "float", $3->sValue, "float");
+              $$ = id;
+            } else { yyerrorTk("Float required", "=", yylineno-1); }
+          }
+          else if ((strcmp(id->type, "char") == 0)) {
+            if ((strcmp($3->type, "char") == 0)) {
+              setValue(id, "char", $3->sValue, "char");
+              $$ = id;
+            } else { yyerrorTk("Char required", "=", yylineno-1); }
+          }
+          else if ((strcmp(id->type, "string") == 0)) {
+            if ((strcmp($3->type, "string") == 0)) {
+              setValue(id, "string", $3->sValue, "char");
+              $$ = id;
+            } else { yyerrorTk("String required", "=", yylineno-1); }
+          }
+          else { yyerrorTk("Wrong assign", "=", yylineno-1); }
+         }
+       ;
 
 decl_const : CONST TYPE ID ASSIGN expr { } ;
 
@@ -640,11 +679,7 @@ int countIntDigits(int number) {
 }
 
 int countFloatDigits(float num) {
-  int count = 0;
   int number = (int) num;
-  do {
-    number /= 10;
-    ++count;
-  } while (number != 0);
-  return count+5;
+  int count = countIntDigits(number);
+  return count + 5;
 }
