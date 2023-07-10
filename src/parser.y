@@ -545,6 +545,15 @@ conditional : if_then                {
                                       ifDecisao++;
                                       $$ = code;
                                      }
+            | if_then elif_list      { 
+                                      char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
+                                      sprintf(stringDecisao, "%d", ifDecisao);
+
+                                      char * code = cat($1, $2, "exitDecisao", stringDecisao, ":\n;");
+                                      // char * code = cat($1, $2, "", "", "");
+                                      ifDecisao++;
+                                      $$ = code;
+                                      }
             | if_then elif_list else { 
                                       char * stringDecisao = (char *) malloc(countIntDigits(ifDecisao) * sizeof(char));
                                       sprintf(stringDecisao, "%d", ifDecisao);
