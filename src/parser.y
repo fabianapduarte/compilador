@@ -72,37 +72,65 @@ stmt : decl_var {
 
         $$ = code;
         free(newValue);
-       }  
+       }
      | println {
-        char * code, * output;
-        if (strcmp($1->type, "bool") == 0) {
-          if (strcmp($1->sValue, "0") == 0) output = cat("\"", "false", "\"", "", "");
-          else output = cat("\"", "true", "\"", "", "");
-        } else if(strcmp($1->input, "true") == 0) {
-          output = cat("", $1->sValue, "", "", "");
-        } else output = cat("\"", $1->sValue, "\"", "", "");
-        code = cat("printf(\"%s\\n\", ", output, ");", "", "");
+        char * code, * output, * substring;
+        char format[1];
+        
+        substring = strstr($1->name, "temp");
+        if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
+        else if (strcmp($1->type, "bool") == 0) {
+          if (strcmp($1->sValue, "0") == 0) output = cat("\"false\"", "", "", "", "");
+          else output = cat("\"true\"", "", "", "", "");
+        }
+        else output = $1->name;
+
+        if (strcmp($1->type, "char") == 0) format[0] = 'c';
+        else if (strcmp($1->type, "int") == 0) format[0] = 'd';
+        else if (strcmp($1->type, "float") == 0) format[0] = 'f';
+        else format[0] = 's';
+
+        code = cat("printf(\"%", format, "\\n\", ", output, ");");
         $$ = code;
+
         free(output);
+        free(substring);
        }
      | print {
-        char * code, * output;
-        if (strcmp($1->type, "bool") == 0) {
-          if (strcmp($1->sValue, "0") == 0) output = cat("\"", "false", "\"", "", "");
-          else output = cat("\"", "true", "\"", "", "");
-        } else if(strcmp($1->input, "true") == 0) {
-          output = cat("", $1->sValue, "", "", "");
-        } else output = cat("\"", $1->sValue, "\"", "", "");
-        code = cat("printf(\"%s\", ", output, ");", "", "");
+        char * code, * output, * substring;
+        char format[1];
+        
+        substring = strstr($1->name, "temp");
+        if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
+        else if (strcmp($1->type, "bool") == 0) {
+          if (strcmp($1->sValue, "0") == 0) output = cat("\"false\"", "", "", "", "");
+          else output = cat("\"true\"", "", "", "", "");
+        }
+        else output = $1->name;
+
+        if (strcmp($1->type, "char") == 0) format[0] = 'c';
+        else if (strcmp($1->type, "int") == 0) format[0] = 'd';
+        else if (strcmp($1->type, "float") == 0) format[0] = 'f';
+        else format[0] = 's';
+
+        code = cat("printf(\"%", format, "\", ", output, ");");
         $$ = code;
+
         free(output);
+        free(substring);
        }
      | TYPE ID ASSIGN INPUT '(' ')' {
         char * code;
-        if(strcmp($1, "int")==0){
+        if (strcmp($1, "int") == 0) {
           code = cat("int ", $2, ";\n", "", "");
           code = cat(code, "scanf(\"%i\", &", $2, ");", "");
-        }else{
+        } else if (strcmp($1, "float") == 0) {
+          code = cat("float ", $2, ";\n", "", "");
+          code = cat(code, "scanf(\"%f\", &", $2, ");", "");
+        } else if (strcmp($1, "char") == 0) {
+          code = cat("char ", $2, ";\n", "", "");
+          code = cat(code, "scanf(\" %c\", &", $2, ");", "");
+        } else {
           code = cat("char * ", $2, " = (char *) malloc(100 * sizeof(char));\n", "", "");
           code = cat(code, "scanf(\"%s\", ", $2, ");", "");
         }
@@ -110,8 +138,31 @@ stmt : decl_var {
         createRecord(&stack, $2, $1, $2, "char", "true");
         $$ = code;
      }
-     | assign { $$ = ""; }
-     | decl_const { $$ = ""; }
+     | assign {
+        char * code, * newValue;
+        if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
+        else if (strcmp($1->type, "string") == 0) newValue = cat("\"", $1->sValue, "\"", "", "");
+        else newValue = cat($1->sValue, "", "", "", "");
+
+        code = cat($1->name, " = ", $1->sValue, ";", "");
+        $$ = code;
+        free(newValue);
+     }
+     | decl_const {
+        char * code, * newValue;
+        if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
+        else if (strcmp($1->type, "string") == 0) newValue = cat("\"", $1->sValue, "\"", "", "");
+        else newValue = cat($1->sValue, "", "", "", "");
+
+        if (strcmp($1->type, "string") == 0) code = cat($1->code, " = ", newValue, ";", "");
+        else {
+          code = cat($1->code, " ", $1->name, " = ", newValue);
+          code = cat(code, ";", "", "", "");
+        }
+
+        $$ = code;
+        free(newValue);
+     }
      | decl_global { $$ = ""; }
      | function { $$ = ""; }
      | conditional { $$ = $1; }
@@ -165,12 +216,13 @@ decl_var : TYPE ID ASSIGN expr {
 expr : NOT expr_eq { 
                   if (($2 != NULL) && strcmp($2->type, "bool") == 0) {
                     char * code = cat("(", "!", $2->code, ")", "");
-                    if(strcmp($2->sValue, "0") == 0){
-                      setValue($2, "bool", "1", code); 
-                    }else if(strcmp($2->sValue, "1") == 0){
-                      setValue($2, "bool", "0", code);
+                    char * boolString = (char *) malloc(1 * sizeof(char));
+                    if (strcmp($2->sValue, "0") == 0){
+                      sprintf(boolString, "1");
+                    } else if(strcmp($2->sValue, "1") == 0) {
+                      sprintf(boolString, "0");
                     }
-                    $$ = $2;
+                    $$ = createRecord(&stack, NULL, "bool", boolString, code, NULL);
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
       }
      | expr OR expr_eq { 
@@ -180,9 +232,9 @@ expr : NOT expr_eq {
                       char * boolString = (char *) malloc(1 * sizeof(char));
                       if((strcmp($1->sValue, "1") == 0) || (strcmp($3->sValue, "1") == 0)){
                         sprintf(boolString, "1");
-                      }else{sprintf(boolString, "0");}
+                      } else sprintf(boolString, "0");
                       $$ = createRecord(&stack, NULL, "bool", boolString, code, NULL);
-                    }else{yyerrorTk("Not a boolean", "=", yylineno-1);}
+                    } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
      }
      | expr AND expr_eq { 
@@ -480,31 +532,31 @@ assign : ID ASSIGN expr {
           struct record * id = search(&stack, $1);
           if ((strcmp(id->type, "int") == 0)) {
             if ((strcmp($3->type, "int") == 0)) {
-              setValue(id, "int", $3->sValue, "int");
+              setValue(id, $3->sValue);
               $$ = id;
             } else { yyerrorTk("Int required", "=", yylineno-1); }
           }
           else if ((strcmp(id->type, "bool") == 0)) {
             if ((strcmp($3->type, "bool") == 0)) {
-              setValue(id, "bool", $3->sValue, "int");
+              setValue(id, $3->sValue);
               $$ = id;
             } else { yyerrorTk("Bool required", "=", yylineno-1); }
           }
           else if ((strcmp(id->type, "float") == 0)) {
             if ((strcmp($3->type, "float") == 0)) {
-              setValue(id, "float", $3->sValue, "float");
+              setValue(id, $3->sValue);
               $$ = id;
             } else { yyerrorTk("Float required", "=", yylineno-1); }
           }
           else if ((strcmp(id->type, "char") == 0)) {
             if ((strcmp($3->type, "char") == 0)) {
-              setValue(id, "char", $3->sValue, "char");
+              setValue(id, $3->sValue);
               $$ = id;
             } else { yyerrorTk("Char required", "=", yylineno-1); }
           }
           else if ((strcmp(id->type, "string") == 0)) {
             if ((strcmp($3->type, "string") == 0)) {
-              setValue(id, "string", $3->sValue, "char");
+              setValue(id, $3->sValue);
               $$ = id;
             } else { yyerrorTk("String required", "=", yylineno-1); }
           }
@@ -512,7 +564,45 @@ assign : ID ASSIGN expr {
          }
        ;
 
-decl_const : CONST TYPE ID ASSIGN expr { } ;
+decl_const : CONST TYPE ID ASSIGN expr {
+  if ((strcmp($2, "int") == 0)) {
+    if ((strcmp($5->type, "int") == 0)) {
+      $$ = createRecord(&stack, $3, "int", $5->sValue, "const int", NULL);
+      free($2);
+    } else { yyerrorTk("Int required", "=", yylineno-1); }
+  }
+  else if ((strcmp($2, "bool") == 0)) {
+    if ((strcmp($5->type, "bool") == 0)) {
+      $$ = createRecord(&stack, $3, "bool", $5->sValue, "const int", NULL);
+      free($2);
+    } else { yyerrorTk("Bool required", "=", yylineno-1); }
+  }
+  else if ((strcmp($2, "float") == 0)) {
+    if ((strcmp($5->type, "float") == 0)) {
+      $$ = createRecord(&stack, $3, "float", $5->sValue, "const float", NULL);
+      free($2);
+    } else { yyerrorTk("Float required", "=", yylineno-1); }
+  }
+  else if ((strcmp($2, "char") == 0)) {
+    if ((strcmp($5->type, "char") == 0)) {
+      char * newChar = (char *) malloc(2 * sizeof(char));
+      sprintf(newChar, "%s", $5->sValue);
+      $$ = createRecord(&stack, $3, "char", newChar, "const char", NULL);
+      free($2);
+    } else { yyerrorTk("Char required", "=", yylineno-1); }
+  }
+  else if ((strcmp($2, "string") == 0)) {
+    if ((strcmp($5->type, "string") == 0)) {
+      char * newString = (char *) malloc(strlen($5->sValue) * sizeof(char));
+      sprintf(newString, "%s", $5->sValue);
+      char * code = (char *) malloc((strlen($3) + 14) * sizeof(char));
+      sprintf(code, "const char %s[%d]", $3, (int) strlen($5->sValue));
+      $$ = createRecord(&stack, $3, "string", newString, code, NULL);
+      free($2);
+    } else { yyerrorTk("String required", "=", yylineno-1); }
+  }
+  else { yyerrorTk("Wrong constant declaration", "=", yylineno-1); }
+} ;
 
 decl_global : GLOBAL TYPE ID ASSIGN expr { } ;
 
@@ -550,7 +640,7 @@ conditional : if_then                {
                                       ifGoto++;
                                       $$ = cat(code, "exit", numString, ":\n", ";\n"); 
                                       }
-            /* | switch                 { $$ = $1; } */
+            | switch                 { }
             ;
 
 elif_list : elif           { $$ = $1; }
@@ -586,7 +676,7 @@ if_then : IF '(' expr ')' '{' stmts '}' {
                                           $$ = code;
                                         } ;
 
-/* switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { } ; */
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmts BREAK '}' { } ;
 
 cases : case | case cases { } ;
 
@@ -637,7 +727,7 @@ oper_incr_decr : ID INCREMENT {
                             int sum = atoi(id->sValue)+1;
                             char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
                             sprintf(sumString, "%d", sum);
-                            setValue(id, "int", sumString, "int");
+                            setValue(id, sumString);
                           } else yyerrorTk("Incorrect type: expected int", $1, yylineno);
                         }else yyerrorTk("Identifier not found", $1, yylineno);
                         $$ = idPre; 
@@ -651,7 +741,7 @@ oper_incr_decr : ID INCREMENT {
                             int sub = atoi(id->sValue)-1;
                             char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
                             sprintf(subString, "%d", sub);
-                            setValue(id, "int", subString, "int");
+                            setValue(id, subString);
                           } else yyerrorTk("Incorrect type: expected int", $1, yylineno);
                         }else yyerrorTk("Identifier not found", $1, yylineno);
                         $$ = idPre; 
@@ -663,7 +753,7 @@ oper_incr_decr : ID INCREMENT {
                             int sum = atoi(id->sValue)+1;
                             char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
                             sprintf(sumString, "%d", sum);
-                            setValue(id, "int", sumString, "int");
+                            setValue(id, sumString);
                           } else yyerrorTk("Incorrect type: expected int", $2, yylineno);
                         }else yyerrorTk("Identifier not found", $2, yylineno);
                         $$ = id;  
@@ -675,7 +765,7 @@ oper_incr_decr : ID INCREMENT {
                             int sub = atoi(id->sValue)-1;
                             char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
                             sprintf(subString, "%d", sub);
-                            setValue(id, "int", subString, "int");
+                            setValue(id, subString);
                           } else yyerrorTk("Incorrect type: expected int", $2, yylineno);
                         }else yyerrorTk("Identifier not found", $2, yylineno);
                         $$ = id;  

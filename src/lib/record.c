@@ -10,14 +10,13 @@ void freeRecord(record * r) {
     if (r->code != NULL) free(r->code);
 	  if (r->sValue != NULL) free(r->sValue);
     if (r->type != NULL) free(r->type);
+    if (r->name != NULL) free(r->name);
     free(r);
   }
 }
 
-void setValue(record *r, char * type, char * value, char * code) {
-  r->type = type;
+void setValue(record *r, char * value) {
   r->sValue = value;
-  r->code = code;
 }
 
 record * createRecord(Stack * stack, char * name, char * type, char * value, char * code, char * input) {
@@ -49,14 +48,19 @@ record * createRecord(Stack * stack, char * name, char * type, char * value, cha
   record * ret = search(stack, name);
   if (ret != NULL) {
     if (strcmp(ret->type, type) == 0) {
-      setValue(ret, type, value, code);
+      setRecord(ret, type, value, code);
       return ret;
     }
   }
   
-  setValue(r, type, value, code);
   push(stack, r);
   return r;
+}
+
+void setRecord(record * r, char * type, char * value, char * code) {
+  r->type = type;
+  r->sValue = value;
+  r->code = code;
 }
 
 void renameRecord(Stack * stack, record * r, char * name){
