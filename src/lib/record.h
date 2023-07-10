@@ -30,6 +30,6 @@ int isEmpty(Stack*);
 int isFull(Stack*);
 void push(Stack*, record *);
 record * search(Stack*, char *);
+record * searchInput(Stack*, char *);
 void printStack(Stack*);
-
 #endif

@@ -139,6 +139,23 @@ stmt : decl_var {
         createRecord(&stack, $2, $1, $2, "char", "true");
         $$ = code;
      }
+     | ID ASSIGN INPUT '(' ')' {
+        struct record * id = searchInput(&stack, $1);
+        if (id == NULL){ yyerrorTk("Identifier not found", $1, yylineno); }
+        // printStack(&stack);
+        char * code;
+        if (strcmp(id->type, "int") == 0) {
+          code = cat("scanf(\"%i\", &", id->name, ");", "", "");
+        } else if (strcmp(id->type, "float") == 0) {
+          code = cat("scanf(\"%f\", &", id->name, ");", "", "");
+        } else if (strcmp(id->type, "char") == 0) {
+          code = cat("scanf(\" %c\", &", id->name, ");", "", "");
+        } else {
+          code = cat("scanf(\"%s\", ", $1, ");", "", "");
+        }
+        
+        $$ = code;
+     }
      | assign {
         char * code, * newValue;
         if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
@@ -727,16 +744,11 @@ while : WHILE '(' expr ')' '{' stmts '}' {
                                           char * numLoop = (char *) malloc(countIntDigits(loopGoto) * sizeof(char));
                                           sprintf(numLoop, "%d", loopGoto);
 
-                                          // char * code = cat("while", numString, ":\n", "", "");
-
-                                          // code = cat(code, "if", "(", $3->code, ")");
-                                          // code = cat(code, "{\n", $6, "goto while", numString);
-                                          // code = cat(code, ";", "\n}", "\n", "");
                                           char * code = cat("while", numLoop, ":\n", "", "");
                                           code = cat(code, "if", "(!(", $3->code, "))");
-                                          code = cat(code, "{", "goto exit", numLoop, ";}\n");
+                                          code = cat(code, "{", "goto exitLoop", numLoop, ";}\n");
                                           code = cat(code, "{", $6, "goto while", numLoop);
-                                          code = cat(code, ";}\n", "exit", numLoop, ":;");
+                                          code = cat(code, ";}\n", "exitLoop", numLoop, ":;");
                                           free(numLoop);
                                           loopGoto++;
                                           $$ = code;

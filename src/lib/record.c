@@ -102,9 +102,26 @@ record * search(Stack* stack, char * name) {
   return NULL;
 }
 
+record * searchInput(Stack* stack, char * name) {
+  int size = stack->top;
+  record * r;
+  if (name != NULL) {
+    while (size >= 0) {
+      r = stack->data[size];
+      if ((strcmp(name, r->name) == 0) && (strcmp("true", r->input) == 0)) {
+        return r;
+      }
+      size--;
+    }
+  }
+  
+  return NULL;
+}
+
 void printStack(Stack* stack){
   printf("Top = %i\n", stack->top);
   for (int i = 0; i < stack->top - 1; i++){
-    printf("%s - %i\n", stack->data[i]->name, i);
+    printf("Nome: %s - Posicao: %i - Valor: %s - Tipo: %s, Input: %s\n", 
+    stack->data[i]->name, i, stack->data[i]->sValue, stack->data[i]->type, stack->data[i]->input);
   }
 }
