@@ -45,6 +45,11 @@ string(<int>) - string(<float>) - string(<char>)
     - `println()` - adiciona quebra de linha
 - Função de leitura
     - `input()`
+- Estruturas de condição
+    - `if(<condicao1>){ ... } elif (<condicao2>){ ... } ... else{ ... } `
+- Estruturas de repetição
+    - `while(<condicao>){ ... }`
+    - `do{ ... }while(<condicao>)`
 - Comentários são realizados com //
     - `//Isto é um comentário na linguagem`
 ---
