@@ -1,18 +1,19 @@
-int i = 12;
-float j = 12.2
-print("Digite um numero: ")
-int num = input()
+int i = 12+4;
+println(i)
+//float j = 12.2
+//print("Digite um numero: ")
+//int num = input()
 //println("Seu nome é: ")
 //println(nome)
 //println(i++)
 //println(i)
 // and 50 <= 50
-if((num>6)){
-    println("maior q 6")
-}
-elif((6 > num)){
-  println("menor q 6")
-}
+//if((num>6)){
+//    println("maior q 6")
+//}
+//elif((6 > num)){
+//  println("menor q 6")
+//}
 //else{
  // println("menor")
 //}

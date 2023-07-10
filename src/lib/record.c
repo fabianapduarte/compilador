@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 extern int yylineno;
-int yydebug = 0;
+
+int tempVar = 0;
 
 void freeRecord(record * r) {
   if (r) {
@@ -29,8 +30,9 @@ record * createRecord(Stack * stack, char * name, char * type, char * value, cha
 
   if (name == NULL) {
     char * nameTemp = (char *) malloc(20 * sizeof(char));
-    sprintf(nameTemp, "temp_%d", yylineno);
+    sprintf(nameTemp, "st_temp_var_%d", tempVar);
     r->name = nameTemp;
+    tempVar++;
   } else {
     r->name = name;
   }

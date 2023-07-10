@@ -7,7 +7,7 @@ int quartoIntervalo   = 0
 print("Digite um número: ")
 int leitura = input()
 
-while(leitura >= 1) {
+while(leitura >= 0) {
       if(leitura >= 0 and leitura <= 25) {
           primeiroIntervalo = primeiroIntervalo + 1
       } 
@@ -24,3 +24,11 @@ while(leitura >= 1) {
       print("Digite outro: ")
       leitura = input()
 }
+print("Primeiro intervalo: ")
+println(primeiroIntervalo)
+print("Segundo intervalo: ")
+println(segundoIntervalo)
+print("Terceiro intervalo: ")
+println(terceiroIntervalo)
+print("Quarto intervalo: ")
+println(quartoIntervalo)

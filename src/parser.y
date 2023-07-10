@@ -72,7 +72,7 @@ stmt : decl_var {
         }
 
         $$ = code;
-        free(newValue);
+        //free(newValue);
        }
      | println {
         char * code, * output, * substring;
@@ -94,8 +94,8 @@ stmt : decl_var {
         code = cat("printf(\"%", format, "\\n\", ", output, ");");
         $$ = code;
 
-        free(output);
-        free(substring);
+        //free(output);
+        //free(substring);
        }
      | print {
         char * code, * output, * substring;
@@ -117,8 +117,8 @@ stmt : decl_var {
         code = cat("printf(\"%", format, "\", ", output, ");");
         $$ = code;
 
-        free(output);
-        free(substring);
+        //free(output);
+        //free(substring);
        }
      | TYPE ID ASSIGN INPUT '(' ')' {
         char * code;
@@ -164,7 +164,7 @@ stmt : decl_var {
 
         code = cat($1->name, " = ", $1->sValue, ";", "");
         $$ = code;
-        free(newValue);
+        //free(newValue);
      }
      | decl_const {
         char * code, * newValue;
@@ -179,7 +179,7 @@ stmt : decl_var {
         }
 
         $$ = code;
-        free(newValue);
+        //free(newValue);
      }
      | decl_global { $$ = ""; }
      | function { $$ = ""; }
@@ -194,19 +194,19 @@ decl_var : TYPE ID ASSIGN expr {
           if ((strcmp($1, "int") == 0)) {
             if ((strcmp($4->type, "int") == 0)) {
               $$ = createRecord(&stack, $2, "int", $4->sValue, "int", NULL);
-              free($1);
+              //free($1);
             } else { yyerrorTk("Int required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "bool") == 0)) {
             if ((strcmp($4->type, "bool") == 0)) {
               $$ = createRecord(&stack, $2, "bool", $4->sValue, "int", NULL);
-              free($1);
+              //free($1);
             } else { yyerrorTk("Bool required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "float") == 0)) {
             if ((strcmp($4->type, "float") == 0)) {
               $$ = createRecord(&stack, $2, "float", $4->sValue, "float", NULL);
-              free($1);
+              //free($1);
             } else { yyerrorTk("Float required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "char") == 0)) {
@@ -214,7 +214,7 @@ decl_var : TYPE ID ASSIGN expr {
               char * newChar = (char *) malloc(2 * sizeof(char));
               sprintf(newChar, "%s", $4->sValue);
               $$ = createRecord(&stack, $2, "char", newChar, "char", NULL);
-              free($1);
+              //free($1);
             } else { yyerrorTk("Char required", "=", yylineno-1); }
           }
           else if ((strcmp($1, "string") == 0)) {
@@ -224,7 +224,7 @@ decl_var : TYPE ID ASSIGN expr {
               char * code = (char *) malloc((strlen($2) + 8) * sizeof(char));
               sprintf(code, "char %s[%d]", $2, (int) strlen($4->sValue));
               $$ = createRecord(&stack, $2, "string", newString, code, NULL);
-              free($1);
+              //free($1);
             } else { yyerrorTk("String required", "=", yylineno-1); }
           }
           else { yyerrorTk("Wrong variable declaration", "=", yylineno-1); }
@@ -382,10 +382,16 @@ expr_comp : expr_comp GREATER_THAN oper {
 oper : oper SUM term { 
                           if (strcmp($1->type, "int") == 0) {
                             if ((strcmp($3->type, "int") == 0)) {
-                              int sum = atoi($1->sValue) + atoi($3->sValue);
-                              char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
-                              sprintf(sumString, "%d", sum);
-                              $$ = createRecord(&stack, NULL, "int", sumString, "int", NULL);
+
+                              char * isTemp = strstr($1->name, "st_temp_var_");
+                              char * code;
+                              if(isTemp != NULL){
+                                code = cat("(", $1->sValue, ") + (", $3->sValue, ")");
+                              }else{
+                                code = cat("(", $1->name, ") + (", $3->sValue, ")");
+                              }
+                              
+                              $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                             }else { yyerrorTk("Different types", "+", yylineno-1); }
                           }
                           else if(strcmp($1->type, "float") == 0){
@@ -522,7 +528,7 @@ casting : TYPE '(' expr ')' {
                                   char * numberString = (char *) malloc(countIntDigits(numberInt) * sizeof(char));
                                   sprintf(numberString, "%d", numberInt);
                                   $$ = createRecord(&stack, NULL, "int", numberString, "int", NULL);
-                                  free($1);
+                                  //free($1);
                                 } else { yyerrorTk("Incorrect type conversion: expected float", $1, yylineno); }
                               }
                               else if ((strcmp($1, "float") == 0)) {
@@ -532,13 +538,13 @@ casting : TYPE '(' expr ')' {
                                   char * numberString = (char *) malloc(countFloatDigits(numberFloat) * sizeof(char));
                                   sprintf(numberString, "%f", numberFloat);
                                   $$ = createRecord(&stack, NULL, "float", numberString, "float", NULL);
-                                  free($1);
+                                  //free($1);
                                 } else { yyerrorTk("Incorrect type conversion: expected int", $1, yylineno); }
                               }
                               else if ((strcmp($1, "string") == 0)) {
                                 if (strcmp($3->type, "int") == 0 || strcmp($3->type, "float") == 0 || strcmp($3->type, "char") == 0) {
                                   $$ = createRecord(&stack, NULL, "string", $3->sValue, "char", NULL);
-                                  free($1);
+                                  //free($1);
                                 }
                                 else { yyerrorTk("Incorrect type conversion: expected int, float or char", $1, yylineno); }
                               }
@@ -586,19 +592,19 @@ decl_const : CONST TYPE ID ASSIGN expr {
   if ((strcmp($2, "int") == 0)) {
     if ((strcmp($5->type, "int") == 0)) {
       $$ = createRecord(&stack, $3, "int", $5->sValue, "const int", NULL);
-      free($2);
+      //free($2);
     } else { yyerrorTk("Int required", "=", yylineno-1); }
   }
   else if ((strcmp($2, "bool") == 0)) {
     if ((strcmp($5->type, "bool") == 0)) {
       $$ = createRecord(&stack, $3, "bool", $5->sValue, "const int", NULL);
-      free($2);
+      //free($2);
     } else { yyerrorTk("Bool required", "=", yylineno-1); }
   }
   else if ((strcmp($2, "float") == 0)) {
     if ((strcmp($5->type, "float") == 0)) {
       $$ = createRecord(&stack, $3, "float", $5->sValue, "const float", NULL);
-      free($2);
+      //free($2);
     } else { yyerrorTk("Float required", "=", yylineno-1); }
   }
   else if ((strcmp($2, "char") == 0)) {
@@ -606,7 +612,7 @@ decl_const : CONST TYPE ID ASSIGN expr {
       char * newChar = (char *) malloc(2 * sizeof(char));
       sprintf(newChar, "%s", $5->sValue);
       $$ = createRecord(&stack, $3, "char", newChar, "const char", NULL);
-      free($2);
+      //free($2);
     } else { yyerrorTk("Char required", "=", yylineno-1); }
   }
   else if ((strcmp($2, "string") == 0)) {
@@ -616,7 +622,7 @@ decl_const : CONST TYPE ID ASSIGN expr {
       char * code = (char *) malloc((strlen($3) + 14) * sizeof(char));
       sprintf(code, "const char %s[%d]", $3, (int) strlen($5->sValue));
       $$ = createRecord(&stack, $3, "string", newString, code, NULL);
-      free($2);
+      //free($2);
     } else { yyerrorTk("String required", "=", yylineno-1); }
   }
   else { yyerrorTk("Wrong constant declaration", "=", yylineno-1); }
@@ -696,8 +702,8 @@ elif : ELIF '(' expr ')' '{' stmts '}' {
                                         code = cat(code, "goto exitDecisao", stringDecisao, ";}\n", "");
                                         code = cat(code, "exit", numCondicao, ":\n", ";\n");
                                         ifCondicao++;
-                                        free(stringDecisao);
-                                        free(numCondicao);
+                                        //free(stringDecisao);
+                                        //free(numCondicao);
                                         $$ = code;
                                        } ;
 
@@ -722,8 +728,8 @@ if_then : IF '(' expr ')' '{' stmts '}' {
                                           code = cat(code, "goto exitDecisao", stringDecisao, ";}\n", "");
                                           code = cat(code, "exit", numCondicao, ":\n", ";\n");
                                           ifCondicao++;
-                                          free(stringDecisao);
-                                          free(numCondicao);
+                                          //free(stringDecisao);
+                                          //free(numCondicao);
                                           $$ = code;
                                         } ;
 
@@ -749,7 +755,7 @@ while : WHILE '(' expr ')' '{' stmts '}' {
                                           code = cat(code, "{", "goto exitLoop", numLoop, ";}\n");
                                           code = cat(code, "{", $6, "goto while", numLoop);
                                           code = cat(code, ";}\n", "exitLoop", numLoop, ":;");
-                                          free(numLoop);
+                                          //free(numLoop);
                                           loopGoto++;
                                           $$ = code;
                                          } ;
@@ -763,7 +769,7 @@ do_while : DO '{' stmts '}' WHILE '(' expr ')' {
                                                 code = cat(code, "{", "goto doWhile", numString, ";");
                                                 code = cat(code, "}", "", "", "");
 
-                                                free(numString);
+                                                //free(numString);
                                                 loopGoto++;
                                                 $$ = code;
                                                } ;
