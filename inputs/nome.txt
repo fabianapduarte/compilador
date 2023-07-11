@@ -1,5 +1,15 @@
-int i = 12+4;
+bool i = true
+bool j = !i
 println(i)
+println(j)
+//for(int i=1; i<j; i++){
+//    for(int j=0; j<4; j++){
+//
+//    }
+//}
+//int teste[1]
+//int i = 12+4;
+//println(i)
 //float j = 12.2
 //print("Digite um numero: ")
 //int num = input()

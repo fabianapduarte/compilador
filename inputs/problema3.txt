@@ -1,0 +1,23 @@
+print("Digite a largura da matriz 1: ")
+int lg1 = input()
+
+print("Digite a altura da matriz 1: ")
+int alt1 = input()
+
+print("Digite a largura da matriz 2: ")
+int lg2 = input()
+
+print("Digite a altura da matriz 2: ")
+int alt2 = input()
+
+if((lg1 != lg2) or (alt1 != alt2) ){
+
+}else{
+    
+    for(int i=0; i<lg1; i++){
+        for(int j=0; j<alt1; j++){
+
+        }
+    }
+}
+
