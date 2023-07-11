@@ -17,7 +17,7 @@ compile:
 	./src/compilador < ./inputs/$(in)
 	if [ -f output.c ]; \
 	then \
-		gcc output.c -o output; \
+		gcc output.c -o output -lm; \
 	fi;
 
 run:

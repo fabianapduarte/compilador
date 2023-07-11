@@ -2,4 +2,4 @@ float x = 2.4
 float y = 1.0
 int c = 2
 float resultado = x ** float(2) - y + float(c)
-print(resultado)
+println(resultado)

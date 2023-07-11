@@ -24,7 +24,8 @@ while(leitura >= 0) {
       print("Digite outro: ")
       leitura = input()
 }
-print("Primeiro intervalo: ")
+print("Resultados: ")
+println("Primeiro intervalo: ")
 println(primeiroIntervalo)
 print("Segundo intervalo: ")
 println(segundoIntervalo)

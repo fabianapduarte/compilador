@@ -380,122 +380,176 @@ expr_comp : expr_comp GREATER_THAN oper {
           ;
 
 oper : oper SUM term { 
-                          if (strcmp($1->type, "int") == 0) {
-                            if ((strcmp($3->type, "int") == 0)) {
+                          if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                              char * var1, * var2;
+                              char * isTempV1 = strstr($1->name, "st_temp_var_");
+                              char * isTempV2 = strstr($3->name, "st_temp_var_");
 
-                              char * isTemp = strstr($1->name, "st_temp_var_");
-                              char * code;
-                              if(isTemp != NULL){
-                                code = cat("(", $1->sValue, ") + (", $3->sValue, ")");
-                              }else{
-                                code = cat("(", $1->name, ") + (", $3->sValue, ")");
-                              }
+                              if(isTempV1 != NULL){var1 = $1->sValue;}
+                              else{var1 = $1->name;}
+                              if(isTempV2 != NULL){var2 = $3->sValue;}
+                              else{var2 = $3->name;}
                               
+                              char * code = cat("(", var1, ") + (", var2, ")");
                               $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
-                            }else { yyerrorTk("Different types", "+", yylineno-1); }
                           }
-                          else if(strcmp($1->type, "float") == 0){
-                            if((strcmp($3->type, "float") == 0)){
-                              float sum = atof($1->sValue) + atof($3->sValue);
-                              char * sumString = (char *) malloc(countFloatDigits(sum) * sizeof(char));
-                              sprintf(sumString, "%f", sum);
-                              $$ = createRecord(&stack, NULL, "float", sumString, "float", NULL);
-                            }else { yyerrorTk("Different types", "+", yylineno-1); }
-                          }
+                          else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                              char * var1, * var2;
+                              char * isTempV1 = strstr($1->name, "st_temp_var_");
+                              char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                              if(isTempV1 != NULL){var1 = $1->sValue;}
+                              else{var1 = $1->name;}
+                              if(isTempV2 != NULL){var2 = $3->sValue;}
+                              else{var2 = $3->name;}
+                              
+                              char * code = cat("(", var1, ") + (", var2, ")");
+                              $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                          }else { yyerrorTk("Different types", "+", yylineno-1); }
     }
      | oper SUBTRACTION term { 
-                              if (strcmp($1->type, "int") == 0) {
-                                if ((strcmp($3->type, "int") == 0)) {
-                                  int sub = atoi($1->sValue) - atoi($3->sValue);
-                                  char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
-                                  sprintf(subString, "%d", sub);
-                                  $$ = createRecord(&stack, NULL, "int", subString, "int", NULL);
-                                }else { yyerrorTk("Different types", "-", yylineno-1); }
+                              if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                                  char * var1, * var2;
+                                  char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                  char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                  if(isTempV1 != NULL){var1 = $1->sValue;}
+                                  else{var1 = $1->name;}
+                                  if(isTempV2 != NULL){var2 = $3->sValue;}
+                                  else{var2 = $3->name;}
+                                  
+                                  char * code = cat("(", var1, ") - (", var2, ")");
+                                  $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                               }
-                              else if(strcmp($1->type, "float") == 0){
-                                if((strcmp($3->type, "float") == 0)){
-                                  float sub = atof($1->sValue) - atof($3->sValue);
-                                  char * subString = (char *) malloc(countFloatDigits(sub) * sizeof(char));
-                                  sprintf(subString, "%f", sub);
-                                  $$ = createRecord(&stack, NULL, "float", subString, "float", NULL);
-                                }else { yyerrorTk("Different types", "-", yylineno-1); }
-                              }
+                              else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                                  char * var1, * var2;
+                                  char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                  char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                  if(isTempV1 != NULL){var1 = $1->sValue;}
+                                  else{var1 = $1->name;}
+                                  if(isTempV2 != NULL){var2 = $3->sValue;}
+                                  else{var2 = $3->name;}
+                                  
+                                  char * code = cat("(", var1, ") - (", var2, ")");
+                                  $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                              }else { yyerrorTk("Different types", "-", yylineno-1); }
      }
      | term { $$ = $1; }
      ;
 
 term : term MULTIPLICATION factor { 
-                                    if (strcmp($1->type, "int") == 0) {
-                                      if ((strcmp($3->type, "int") == 0)) {
-                                        int mult = atoi($1->sValue) * atoi($3->sValue);
-                                        char * multString = (char *) malloc(countIntDigits(mult) * sizeof(char));
-                                        sprintf(multString, "%d", mult);
-                                        $$ = createRecord(&stack, NULL, "int", multString, "int", NULL);
-                                      }else { yyerrorTk("Different types", "*", yylineno-1); }
+                                    if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") * (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                                     }
-                                    else if(strcmp($1->type, "float") == 0){
-                                      if((strcmp($3->type, "float") == 0)){
-                                        float mult = atof($1->sValue) * atof($3->sValue);
-                                        char * multString = (char *) malloc(countFloatDigits(mult) * sizeof(char));
-                                        sprintf(multString, "%f", mult);
-                                        $$ = createRecord(&stack, NULL, "float", multString, "float", NULL);
-                                      }else { yyerrorTk("Different types", "*", yylineno-1); }
-                                    }
+                                    else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") - (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                                    }else { yyerrorTk("Different types", "*", yylineno-1); }
       }
      | term DIVISION factor       {
-                                    if (strcmp($1->type, "int") == 0) {
-                                      if ((strcmp($3->type, "int") == 0)) {
-                                        int division = atoi($1->sValue) / atoi($3->sValue);
-                                        char * divisionString = (char *) malloc(countIntDigits(division) * sizeof(char));
-                                        sprintf(divisionString, "%d", division);
-                                        $$ = createRecord(&stack, NULL, "int", divisionString, "int", NULL);
-                                      }else { yyerrorTk("Different types", "/", yylineno-1); }
+                                    if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") / (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                                     }
-                                    else if((strcmp($1->type, "float") == 0)){
-                                      if((strcmp($3->type, "float") == 0)){
-                                        float division = atof($1->sValue) / atof($3->sValue);
-                                        char * divisionString = (char *) malloc(countFloatDigits(division) * sizeof(char));
-                                        sprintf(divisionString, "%f", division);
-                                        $$ = createRecord(&stack, NULL, "float", divisionString, "float", NULL);
-                                      }else{ yyerrorTk("Different types", "/", yylineno-1); }
-                                    }
+                                    else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") / (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                                    }else { yyerrorTk("Different types", "/", yylineno-1); }
                                   }
      | term POWER factor          {
-                                    if (strcmp($1->type, "int") == 0) {
-                                      if ((strcmp($3->type, "int") == 0)) {
-                                        float powVar = pow(strtod($1->sValue, NULL), strtod($3->sValue, NULL));
-                                        char * powString = (char *) malloc(countFloatDigits(powVar) * sizeof(char));
-                                        sprintf(powString, "%f", powVar);
-                                        $$ = createRecord(&stack, NULL, "int", powString, "int", NULL);
-                                      }else { yyerrorTk("Different types", "**", yylineno-1); }
+                                    if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("pow((double)", var1, ", (double)", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                                     }
-                                    else if((strcmp($1->type, "float") == 0)){
-                                      if((strcmp($3->type, "float") == 0)){
-                                        float powVar = pow(strtod($1->sValue, NULL), strtod($3->sValue, NULL));
-                                        char * powString = (char *) malloc(countFloatDigits(powVar) * sizeof(char));
-                                        sprintf(powString, "%f", powVar);
-                                        $$ = createRecord(&stack, NULL, "float", powString, "float", NULL);
-                                      }else{ yyerrorTk("Different types", "**", yylineno-1); }
-                                    }
+                                    else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("pow((double)", var1, ", (double)", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                                    }else { yyerrorTk("Different types", "**", yylineno-1); }
                                     
                                   }
      | term REST factor           {
-                                    if (strcmp($1->type, "int") == 0) {
-                                      if ((strcmp($3->type, "int") == 0)) {
-                                        int rest = atoi($1->sValue) % atoi($3->sValue);
-                                        char * restString = (char *) malloc(countIntDigits(rest) * sizeof(char));
-                                        sprintf(restString, "%d", rest);
-                                        $$ = createRecord(&stack, NULL, "int", restString, "int", NULL);
-                                      }else { yyerrorTk("Different types", "%", yylineno-1); }
+                                    if ((strcmp($1->type, "int") == 0) && (strcmp($3->type, "int") == 0)) {
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") % (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
                                     }
-                                    else if((strcmp($1->type, "float") == 0)){
-                                      if((strcmp($3->type, "float") == 0)){
-                                        float rest = atoi($1->sValue) % atoi($3->sValue);
-                                        char * restString = (char *) malloc(countFloatDigits(rest) * sizeof(char));
-                                        sprintf(restString, "%f", rest);
-                                        $$ = createRecord(&stack, NULL, "float", restString, "float", NULL);
-                                      }else{ yyerrorTk("Different types", "%", yylineno-1); }
-                                    }
+                                    else if((strcmp($1->type, "float") == 0) && (strcmp($3->type, "float") == 0)){
+                                        char * var1, * var2;
+                                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                                        else{var1 = $1->name;}
+                                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                                        else{var2 = $3->name;}
+                                        
+                                        char * code = cat("(", var1, ") % (", var2, ")");
+                                        $$ = createRecord(&stack, NULL, "float", code, "float", NULL);
+                                    }else { yyerrorTk("Different types", "%", yylineno-1); }
                                   }
      | factor                     { $$ = $1; }
      ;

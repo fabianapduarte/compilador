@@ -108,7 +108,7 @@ $ ./compilador < ../inputs/problema1.txt
 
 $ rm -rf output output.c
 $ ./src/compilador < ./inputs/$(in)
-$ gcc output.c -o output; 
+$ gcc output.c -o output -lm; 
 $ ./output
 
 # Para limpar os arquivos gerados
