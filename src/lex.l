@@ -22,7 +22,7 @@ OBJECT\"object\"
 %%
 
 [ \t]                     ;
-\n                        { yylineno++; }
+(\n)+                     { yylineno++; }
 
 "if"                      { return(IF); }
 "else"                    { return(ELSE); }
@@ -109,7 +109,7 @@ OBJECT\"object\"
 {IDENTIFIER}              { yylval.sValue = strdup(yytext); 
                             return ID; }
 
-(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(\/\/.*) {  } /*Comentario*/
+(\/\*([^*]|[\n]|(\*+([^*\/]|[\n])))*\*+\/)|(\/\/.*) {  } /*Comentario*/
 .                         { yyerror("Invalid character."); }
 
 %%
