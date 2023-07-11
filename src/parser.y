@@ -663,7 +663,7 @@ factor : '(' expr ')'   { $$ = $2; }
        | ID '[' ID MULTIPLICATION ID SUM ID']' {
                           char * code = cat($1, "[", $3, "*", $5);
                           code = cat(code, "+", $7, "]", "");
-                          $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
+                          $$ = createRecord(&stack, code, "int", code, "int", NULL);
                         }
        ;
 
