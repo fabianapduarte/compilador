@@ -50,8 +50,12 @@ string(<int>) - string(<float>) - string(<char>)
 - Estruturas de repetição
     - `while(<condicao>){ ... }`
     - `do{ ... }while(<condicao>)`
+    - `for(<declaracao>;<condicao>;<incremento/decremento>){}`
 - Comentários são realizados com //
     - `//Isto é um comentário na linguagem`
+- Matriz de números inteiros
+    - Declaração: `int nomeMatriz[<altura>][<largura>]`
+    - Acesso: `nomeMatriz[<linha> * <largura> + <coluna>] = <inteiro>`
 ---
 
 ## Exemplos de programas
