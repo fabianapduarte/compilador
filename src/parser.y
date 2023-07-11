@@ -213,6 +213,8 @@ array_assign : TYPE ID '[' INT_LIT ']' {
               };
 
 decl_var : TYPE ID ASSIGN expr {
+          struct record * id = search(&stack, $2);
+          if (id != NULL) { yyerrorTk("Identifier has already been declared ", $2, yylineno); }
           if ((strcmp($1, "int") == 0)) {
             if ((strcmp($4->type, "int") == 0)) {
               $$ = createRecord(&stack, $2, "int", $4->sValue, "int", NULL);
@@ -668,41 +670,47 @@ casting : TYPE '(' expr ')' {
 
 assign : ID ASSIGN expr {
           struct record * id = search(&stack, $1);
-          if ((strcmp(id->type, "int") == 0)) {
-            if ((strcmp($3->type, "int") == 0)) {
-              setValue(id, $3->sValue);
-              $$ = id;
-            } else { yyerrorTk("Int required", "=", yylineno-1); }
+          if (id == NULL) {
+            yyerrorTk("Identifier not found", $1, yylineno-1);
+          } else {
+            if ((strcmp(id->type, "int") == 0)) {
+              if ((strcmp($3->type, "int") == 0)) {
+                setValue(id, $3->sValue);
+                $$ = id;
+              } else { yyerrorTk("Int required", "=", yylineno-1); }
+            }
+            else if ((strcmp(id->type, "bool") == 0)) {
+              if ((strcmp($3->type, "bool") == 0)) {
+                setValue(id, $3->sValue);
+                $$ = id;
+              } else { yyerrorTk("Bool required", "=", yylineno-1); }
+            }
+            else if ((strcmp(id->type, "float") == 0)) {
+              if ((strcmp($3->type, "float") == 0)) {
+                setValue(id, $3->sValue);
+                $$ = id;
+              } else { yyerrorTk("Float required", "=", yylineno-1); }
+            }
+            else if ((strcmp(id->type, "char") == 0)) {
+              if ((strcmp($3->type, "char") == 0)) {
+                setValue(id, $3->sValue);
+                $$ = id;
+              } else { yyerrorTk("Char required", "=", yylineno-1); }
+            }
+            else if ((strcmp(id->type, "string") == 0)) {
+              if ((strcmp($3->type, "string") == 0)) {
+                setValue(id, $3->sValue);
+                $$ = id;
+              } else { yyerrorTk("String required", "=", yylineno-1); }
+            }
+            else { yyerrorTk("Wrong assign", "=", yylineno-1); }
           }
-          else if ((strcmp(id->type, "bool") == 0)) {
-            if ((strcmp($3->type, "bool") == 0)) {
-              setValue(id, $3->sValue);
-              $$ = id;
-            } else { yyerrorTk("Bool required", "=", yylineno-1); }
-          }
-          else if ((strcmp(id->type, "float") == 0)) {
-            if ((strcmp($3->type, "float") == 0)) {
-              setValue(id, $3->sValue);
-              $$ = id;
-            } else { yyerrorTk("Float required", "=", yylineno-1); }
-          }
-          else if ((strcmp(id->type, "char") == 0)) {
-            if ((strcmp($3->type, "char") == 0)) {
-              setValue(id, $3->sValue);
-              $$ = id;
-            } else { yyerrorTk("Char required", "=", yylineno-1); }
-          }
-          else if ((strcmp(id->type, "string") == 0)) {
-            if ((strcmp($3->type, "string") == 0)) {
-              setValue(id, $3->sValue);
-              $$ = id;
-            } else { yyerrorTk("String required", "=", yylineno-1); }
-          }
-          else { yyerrorTk("Wrong assign", "=", yylineno-1); }
          }
        ;
 
 decl_const : CONST TYPE ID ASSIGN expr {
+  struct record * id = search(&stack, $3);
+  if (id != NULL) { yyerrorTk("Constant has already been declared ", $3, yylineno); }
   if ((strcmp($2, "int") == 0)) {
     if ((strcmp($5->type, "int") == 0)) {
       $$ = createRecord(&stack, $3, "int", $5->sValue, "const int", NULL);
