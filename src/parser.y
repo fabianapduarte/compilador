@@ -78,23 +78,33 @@ stmt : decl_var {
         char * code, * output, * substring;
         char format[1];
         substring = strstr($1->name, "st_temp_var_");
+          if (strcmp($1->type, "bool") == 0) {
+            format[0] = 'i';
+            if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          } 
+          else if (strcmp($1->type, "char") == 0) {
+            format[0] = 'c';
+            if (substring != NULL) output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          }
+          else if (strcmp($1->type, "int") == 0) {
+            format[0] = 'd';
+            if (substring != NULL) output = cat($1->sValue, "", "", "", "");
+            else output = $1->name;
+          }
+          else if (strcmp($1->type, "float") == 0) {
+            format[0] = 'f';
+            if (substring != NULL) output = cat($1->sValue, "", "", "", "");
+            else output = $1->name;
+          }
+          else {
+            format[0] = 's';
+            if (substring != NULL) output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          }
 
-        if (strcmp($1->type, "bool") == 0) {
-          if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
-          else output = $1->name;
-
-        } else {
-          if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
-          else output = $1->name;
-
-          if (strcmp($1->type, "char") == 0) format[0] = 'c';
-          else if (strcmp($1->type, "int") == 0) format[0] = 'd';
-          else if (strcmp($1->type, "float") == 0) format[0] = 'f';
-          else format[0] = 's';
-
-          code = cat("printf(\"%", format, "\\n\", ", output, ");");
-        }
-        
+        code = cat("printf(\"%", format, "\\n\", ", output, ");");
         $$ = code;
 
         free(substring);
@@ -104,23 +114,33 @@ stmt : decl_var {
         char * code, * output, * substring;
         char format[1];
         substring = strstr($1->name, "st_temp_var_");
+          if (strcmp($1->type, "bool") == 0) {
+            format[0] = 'i';
+            if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          } 
+          else if (strcmp($1->type, "char") == 0) {
+            format[0] = 'c';
+            if (substring != NULL) output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          }
+          else if (strcmp($1->type, "int") == 0) {
+            format[0] = 'd';
+            if (substring != NULL) output = cat($1->sValue, "", "", "", "");
+            else output = $1->name;
+          }
+          else if (strcmp($1->type, "float") == 0) {
+            format[0] = 'f';
+            if (substring != NULL) output = cat($1->sValue, "", "", "", "");
+            else output = $1->name;
+          }
+          else {
+            format[0] = 's';
+            if (substring != NULL) output = cat("\"", $1->sValue, "\"", "", "");
+            else output = $1->name;
+          }
 
-        if (strcmp($1->type, "bool") == 0) {
-          if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
-          else output = $1->name;
-
-        } else {
-          if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
-          else output = $1->name;
-
-          if (strcmp($1->type, "char") == 0) format[0] = 'c';
-          else if (strcmp($1->type, "int") == 0) format[0] = 'd';
-          else if (strcmp($1->type, "float") == 0) format[0] = 'f';
-          else format[0] = 's';
-
-          code = cat("printf(\"%", format, "\", ", output, ");");
-        }
-        
+        code = cat("printf(\"%", format, "\", ", output, ");");
         $$ = code;
         
         free(substring);

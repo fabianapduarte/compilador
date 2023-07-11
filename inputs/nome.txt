@@ -1,5 +1,5 @@
-int i = 5
-print(i)
+bool i = not false
+println(i)
 //for(int i=1; i<j; i++){
 //    for(int j=0; j<4; j++){
 //
