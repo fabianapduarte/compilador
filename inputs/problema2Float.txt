@@ -9,16 +9,16 @@ float leitura = input()
 
 while(leitura >= 0.0) {
       if(leitura >= 0.0 and leitura <= 25.0) {
-          primeiroIntervalo = primeiroIntervalo + 1
+          primeiroIntervalo++
       } 
       if(leitura > 25.0 and leitura <= 50.0) {
-          segundoIntervalo = segundoIntervalo + 1
+          segundoIntervalo++
       }
       if(leitura > 50.0 and leitura <= 75.0) {
-          terceiroIntervalo = terceiroIntervalo + 1
+          terceiroIntervalo++
       }
       if(leitura > 75.0 and leitura <= 100.0) {
-          quartoIntervalo = quartoIntervalo + 1
+          quartoIntervalo++
       }
 
       print("Digite outro: ")

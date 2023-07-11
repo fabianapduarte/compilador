@@ -9,23 +9,23 @@ int leitura = input()
 
 while(leitura >= 0) {
       if(leitura >= 0 and leitura <= 25) {
-          primeiroIntervalo = primeiroIntervalo + 1
+        primeiroIntervalo++
       } 
       if(leitura > 25 and leitura <= 50) {
-          segundoIntervalo = segundoIntervalo + 1
+          segundoIntervalo++
       }
       if(leitura > 50 and leitura <= 75) {
-          terceiroIntervalo = terceiroIntervalo + 1
+          terceiroIntervalo++
       }
       if(leitura > 75 and leitura <= 100) {
-          quartoIntervalo = quartoIntervalo + 1
+          quartoIntervalo++
       }
 
       print("Digite outro: ")
       leitura = input()
 }
-print("Resultados: ")
-println("Primeiro intervalo: ")
+println("Resultados: ")
+print("Primeiro intervalo: ")
 println(primeiroIntervalo)
 print("Segundo intervalo: ")
 println(segundoIntervalo)

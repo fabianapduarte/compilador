@@ -166,6 +166,10 @@ stmt : decl_var {
         $$ = code;
         //free(newValue);
      }
+     | oper_incr_decr { 
+        char * code;
+        $$ = cat($1->sValue, ";", "", "", ""); 
+      }
      | decl_const {
         char * code, * newValue;
         if (strcmp($1->type, "char") == 0) newValue = cat("\'", $1->sValue, "\'", "", "");
@@ -556,7 +560,6 @@ term : term MULTIPLICATION factor {
 
 factor : '(' expr ')'   { $$ = $2; }
        | casting        { $$ = $1; }
-       | oper_incr_decr { $$ = $1; }
        | ID             {
                           struct record * id = search(&stack, $1);
                           if (id != NULL) $$ = id;
@@ -830,55 +833,43 @@ do_while : DO '{' stmts '}' WHILE '(' expr ')' {
 
 oper_incr_decr : ID INCREMENT { 
                         struct record * id = search(&stack, $1);
-                        struct record * idPre = (record *) malloc(sizeof(record));
                         if (id != NULL) {
                           if(strcmp(id->type, "int") == 0){
-                            copyRecord(id, idPre);
-                            int sum = atoi(id->sValue)+1;
-                            char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
-                            sprintf(sumString, "%d", sum);
-                            setValue(id, sumString);
+                            char * code = cat(id->name, "++", "", "", "");
+                            setValue(id, code);
                           } else yyerrorTk("Incorrect type: expected int", $1, yylineno);
                         }else yyerrorTk("Identifier not found", $1, yylineno);
-                        $$ = idPre; 
+                        $$ = id; 
                }
                | ID DECREMENT {
                         struct record * id = search(&stack, $1);
-                        struct record * idPre = (record *) malloc(sizeof(record));
                         if (id != NULL) {
                           if(strcmp(id->type, "int") == 0){
-                            copyRecord(id, idPre);
-                            int sub = atoi(id->sValue)-1;
-                            char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
-                            sprintf(subString, "%d", sub);
-                            setValue(id, subString);
+                            char * code = cat(id->name, "--", "", "", "");
+                            setValue(id, code);
                           } else yyerrorTk("Incorrect type: expected int", $1, yylineno);
                         }else yyerrorTk("Identifier not found", $1, yylineno);
-                        $$ = idPre; 
+                        $$ = id;  
                } 
                | INCREMENT ID {
                         struct record * id = search(&stack, $2);
                         if (id != NULL) {
                           if(strcmp(id->type, "int") == 0){
-                            int sum = atoi(id->sValue)+1;
-                            char * sumString = (char *) malloc(countIntDigits(sum) * sizeof(char));
-                            sprintf(sumString, "%d", sum);
-                            setValue(id, sumString);
+                            char * code = cat("++", id->name, "", "", "");
+                            setValue(id, code);
                           } else yyerrorTk("Incorrect type: expected int", $2, yylineno);
                         }else yyerrorTk("Identifier not found", $2, yylineno);
                         $$ = id;  
                }
                | DECREMENT ID {
-                        struct record * id = search(&stack, $2);
+                       struct record * id = search(&stack, $2);
                         if (id != NULL) {
                           if(strcmp(id->type, "int") == 0){
-                            int sub = atoi(id->sValue)-1;
-                            char * subString = (char *) malloc(countIntDigits(sub) * sizeof(char));
-                            sprintf(subString, "%d", sub);
-                            setValue(id, subString);
+                            char * code = cat("--", id->name, "", "", "");
+                            setValue(id, code);
                           } else yyerrorTk("Incorrect type: expected int", $2, yylineno);
                         }else yyerrorTk("Identifier not found", $2, yylineno);
-                        $$ = id;  
+                        $$ = id;
                }
                ;
 
