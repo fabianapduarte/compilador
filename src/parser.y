@@ -237,17 +237,17 @@ array_assign : TYPE ID '[' INT_LIT ']' {
                 $$ = createRecord(&stack, $2, $1, NULL, code, NULL);
               };
 
-array_assign_element : ID '[' ID MULTIPLICATION ID SUM ID']' ASSIGN ID {
-                            char * code = cat($1, "[", $3, "*", $5);
-                            code = cat(code, "+", $7, "] = ", "");
-                            code = cat(code, $10, ";", "", "");
-                            $$ = code;
-                      }
-                      |ID '[' ID MULTIPLICATION ID SUM ID']' ASSIGN expr {
-                            char * code = cat($1, "[", $3, "*", $5);
-                            code = cat(code, "+", $7, "] = ", "");
-                            code = cat(code, $10->sValue, ";", "", "");
-                            $$ = code;
+array_assign_element : ID '[' ID MULTIPLICATION ID SUM ID ']' ASSIGN expr {
+                        char * substring, * code;
+                        code = cat($1, "[", $3, "*", $5);
+                        code = cat(code, "+", $7, "] = ", "");
+                        substring = strstr($10, "st_temp_var_");
+                        if (substring == NULL) {
+                          code = cat(code, $10->sValue, ";", "", "");
+                        } else {
+                          code = cat(code, $10->name, ";", "", "");
+                        }
+                        $$ = code;
                       };
 
 decl_var : TYPE ID ASSIGN expr {
