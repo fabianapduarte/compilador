@@ -1,31 +1,28 @@
-int x = 4 + 3 - 1
-int d = 4 + 3 * 2
-int p = (4 + 3) * 2
-int l = 4 + 3 / 2
-int k = (4 + 3) / 2
-print(d)
-print(p)
-print(l)
-print(k)
-int y = x
-bool booleano = false
-bool booleano2 = not booleano
-float f = 2.1
-int floatConversion = int(3.2)
-string intToString = string(1)
-string floatToString = string(1.1)
-string charToString = string('c')
-//string stringToString = string("fabiana")
+// Variaveis omitidas
+// x = 10
+// print(x)
 
-int z = x / 3
-char c = 'a'
-string s = "ola mundo"
-print(1.5)
-print(15)
-int af = input()
-print(af)
-print(true)
-print(false)
-print("oi")
-print('a')
-print(x)
+
+// Variaveis duplicadas no mesmo escopo
+// float f = 1.1
+// float f = 1.5
+
+
+// Verificação de tipos e casting
+// int y = 3 + 5.5
+// int y = 3 + int(5.5)
+// println(y)
+
+// float z = 5.5 + 4
+// float z = 5.5 + float(4)
+// println(z)
+
+// string s = 'a'
+
+// char a = 'a'
+// string s = string(a)
+// println(s)
+
+// string numberString = 1
+// string numberString = string(1)
+// println(numberString)
