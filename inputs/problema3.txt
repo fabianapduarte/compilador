@@ -11,13 +11,47 @@ print("Digite a altura da matriz 2: ")
 int alt2 = input()
 
 if((lg1 != lg2) or (alt1 != alt2) ){
-
+    println("Impossivel somar")
 }else{
+    int m1[lg1][alt1]
+    int m2[lg1][alt1]
+    int m3[lg1][alt1]
     
     for(int i=0; i<lg1; i++){
         for(int j=0; j<alt1; j++){
-
+            print("Insira [")
+            print(i)
+            print("][")
+            print(j)
+            print("] da matriz 1: ")
+            int leitura = input()
+            m1[i * lg1 + j]=leitura
         }
+    }
+
+    for(int k=0; k<lg1; k++){
+        for(int l=0; l<alt1; l++){
+            print("Insira [")
+            print(k)
+            print("][")
+            print(l)
+            print("] da matriz 2: ")
+            int leitura = input()
+            m2[k * lg1 + l]=leitura
+        }
+    }
+
+    for(int m=0; m<lg1; m++){
+        for(int n=0; n<alt1; n++){
+            m3[m * lg1 + n]=m1[m * lg1 + n]+m2[m * lg1 + n]
+        }
+    }
+
+    for(int a=0; a<lg1; a++){
+        for(int b=0; b<alt1; b++){
+            print(m3[a * lg1 + b])
+        }
+        println("---")
     }
 }
 

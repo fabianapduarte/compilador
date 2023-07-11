@@ -40,7 +40,7 @@
 %left OR AND NOT EQUAL DIFFERENCE GREATER_THAN GREATER_THAN_OR_EQUAL LESS_THAN LESS_THAN_OR_EQUAL
 %left SUM INCREMENT SUBTRACTION DECREMENT MULTIPLICATION POWER DIVISION REST
 
-%type <sValue> stmt stmts if_then conditional else elif elif_list loop while for do_while for_declare
+%type <sValue> stmt stmts if_then conditional else elif elif_list loop while for do_while for_declare array_assign_element
 %type <rec> decl_var println print casting decl_const decl_global assign function args args_aux array_assign
 %type <rec> switch cases case
 %type <rec> expr expr_eq expr_comp oper term factor oper_incr_decr
@@ -168,6 +168,9 @@ stmt : decl_var {
      | array_assign{
         $$ = $1->code;
      }
+     | array_assign_element{
+      $$ = $1;
+     }
      | oper_incr_decr { 
         char * code;
         $$ = cat($1->sValue, ";", "", "", ""); 
@@ -201,9 +204,24 @@ array_assign : TYPE ID '[' INT_LIT ']' {
                 $$ = createRecord(&stack, $2, $1, NULL, code, NULL);
               }
               |TYPE ID '[' ID ']' '[' ID ']' {
-                char * code = cat("int ", $2, "[", $4, "];");
+                // createRecord(&stack, $2, "int", "", "int", NULL);
+                char * code = cat("int * ", $2, " = (int *)malloc(", $4, "*");
+                code = cat(code, $7, "*sizeof(int));", "", "");
                 $$ = createRecord(&stack, $2, $1, NULL, code, NULL);
               };
+
+array_assign_element : ID '[' ID MULTIPLICATION ID SUM ID']' ASSIGN ID {
+                            char * code = cat($1, "[", $3, "*", $5);
+                            code = cat(code, "+", $7, "] = ", "");
+                            code = cat(code, $10, ";", "", "");
+                            $$ = code;
+                      }
+                      |ID '[' ID MULTIPLICATION ID SUM ID']' ASSIGN expr {
+                            char * code = cat($1, "[", $3, "*", $5);
+                            code = cat(code, "+", $7, "] = ", "");
+                            code = cat(code, $10->sValue, ";", "", "");
+                            $$ = code;
+                      };
 
 decl_var : TYPE ID ASSIGN expr {
           if ((strcmp($1, "int") == 0)) {
@@ -248,39 +266,49 @@ decl_var : TYPE ID ASSIGN expr {
          
 expr : NOT expr_eq { 
                   if (($2 != NULL) && strcmp($2->type, "bool") == 0) {
-                    char * code = cat("(", "!", $2->code, ")", "");
-                    char * boolString = (char *) malloc(1 * sizeof(char));
-                    if (strcmp($2->sValue, "0") == 0){
-                      sprintf(boolString, "1");
-                    } else if(strcmp($2->sValue, "1") == 0) {
-                      sprintf(boolString, "0");
-                    }
-                    $$ = createRecord(&stack, NULL, "bool", boolString, code, NULL);
+                      char * var1;
+                      char * isTempV1 = strstr($2->name, "st_temp_var_");
+
+                      if(isTempV1 != NULL){var1 = $2->sValue;}
+                      else{var1 = $2->name;}
+                      
+                      char * code = cat("!(", var1, ")", "", "");
+                      $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                   } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
       }
      | expr OR expr_eq { 
                   if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
                     if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
-                      char * code = cat("(", $1->code, "||", $3->code, ")");
-                      char * boolString = (char *) malloc(1 * sizeof(char));
-                      if((strcmp($1->sValue, "1") == 0) || (strcmp($3->sValue, "1") == 0)){
-                        sprintf(boolString, "1");
-                      } else sprintf(boolString, "0");
-                      $$ = createRecord(&stack, NULL, "bool", boolString, code, NULL);
-                    } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
-                  } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
+                        char * var1, * var2;
+                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                        else{var1 = $1->name;}
+                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                        else{var2 = $3->name;}
+                        
+                        char * code = cat("(", var1, ") || (", var2, ")");
+                        $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
+                    } else { yyerrorTk("Not a boolean", "or", yylineno-1); }
+                  } else { yyerrorTk("Not a boolean", "or", yylineno-1); }
      }
      | expr AND expr_eq { 
                   if (($1 != NULL) && strcmp($1->type, "bool") == 0) {
                     if (($3 != NULL) && strcmp($3->type, "bool") == 0) {
-                      char * code = cat("(", $1->code, "&&", $3->code, ")");
-                      char * boolString = (char *) malloc(1 * sizeof(char));
-                      if((strcmp($1->sValue, "1") == 0) && (strcmp($3->sValue, "1") == 0)){
-                        sprintf(boolString, "1");
-                      }else{sprintf(boolString, "0");}  
-                      $$ = createRecord(&stack, NULL, "bool", boolString, code, NULL);
-                    }else{yyerrorTk("Not a boolean", "=", yylineno-1);}
-                  } else { yyerrorTk("Not a boolean", "=", yylineno-1); }
+                        char * var1, * var2;
+                        char * isTempV1 = strstr($1->name, "st_temp_var_");
+                        char * isTempV2 = strstr($3->name, "st_temp_var_");
+
+                        if(isTempV1 != NULL){var1 = $1->sValue;}
+                        else{var1 = $1->name;}
+                        if(isTempV2 != NULL){var2 = $3->sValue;}
+                        else{var2 = $3->name;}
+                        
+                        char * code = cat("(", var1, ") && (", var2, ")");
+                        $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
+                    }else{yyerrorTk("Not a boolean", "and", yylineno-1);}
+                  } else { yyerrorTk("Not a boolean", "and", yylineno-1); }
      }
      | expr_eq { $$ = $1; }
      ;
@@ -297,7 +325,7 @@ expr_eq : expr_eq EQUAL expr_comp {
                   else{var2 = $3->name;}
                   
                   char * code = cat("(", var1, ") == (", var2, ")");
-                  $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                  $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
               }else{ yyerrorTk("Different types", "==", yylineno-1); }
         }
         | expr_eq DIFFERENCE expr_comp { 
@@ -312,7 +340,7 @@ expr_eq : expr_eq EQUAL expr_comp {
                   else{var2 = $3->name;}
                   
                   char * code = cat("(", var1, ") != (", var2, ")");
-                  $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                  $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
               }else{ yyerrorTk("Different types", "!=", yylineno-1); }
         }
         | expr_comp { $$ = $1; }
@@ -330,7 +358,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") > (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
                             char * var1, * var2;
@@ -343,7 +371,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") > (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else{ yyerrorTk("Different types", ">", yylineno-1); }
           }
           | expr_comp GREATER_THAN_OR_EQUAL oper { 
@@ -358,7 +386,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") >= (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
                             char * var1, * var2;
@@ -371,7 +399,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") >= (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else{ yyerrorTk("Different types", ">=", yylineno-1); }
           }
           | expr_comp LESS_THAN oper { 
@@ -386,7 +414,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") < (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
                             char * var1, * var2;
@@ -399,7 +427,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") < (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else{ yyerrorTk("Different types", "<", yylineno-1); }
           }
           | expr_comp LESS_THAN_OR_EQUAL oper { 
@@ -414,7 +442,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") <= (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else if
                         (($1!=NULL && strcmp($1->type, "float") == 0) && ($3!=NULL && strcmp($3->type, "float") == 0)){
                             char * var1, * var2;
@@ -427,7 +455,7 @@ expr_comp : expr_comp GREATER_THAN oper {
                             else{var2 = $3->name;}
                             
                             char * code = cat("(", var1, ") <= (", var2, ")");
-                            $$ = createRecord(&stack, NULL, "bool", "1", code, NULL);
+                            $$ = createRecord(&stack, NULL, "bool", code, code, NULL);
                         }else{ yyerrorTk("Different types", "<=", yylineno-1); }
           }
           | oper { $$ = $1; }
@@ -625,6 +653,11 @@ factor : '(' expr ')'   { $$ = $2; }
        | FLOAT_LIT      { $$ = createRecord(&stack, NULL, "float", $1, "float", NULL); }
        | STR_LIT        { $$ = createRecord(&stack, NULL, "string", $1, "char", NULL); }
        | CHAR_LIT       { $$ = createRecord(&stack, NULL, "char", $1, "char", NULL); }
+       | ID '[' ID MULTIPLICATION ID SUM ID']' {
+                          char * code = cat($1, "[", $3, "*", $5);
+                          code = cat(code, "+", $7, "]", "");
+                          $$ = createRecord(&stack, NULL, "int", code, "int", NULL);
+                        }
        ;
 
 casting : TYPE '(' expr ')' {
@@ -857,7 +890,15 @@ for : for_declare expr ';' oper_incr_decr ')' '{' stmts '}' {
                                           code = cat(code, "if", "(!(", $2->code, "))");
 
                                           code = cat(code, "{", "goto exitLoop", numLoop, ";}\n");
-                                          code = cat(code, "{", $7, "goto for", numLoop);
+
+                                          char * ret = strtok($1, " ");
+                                          if (ret != NULL) {
+                                              ret = strtok(NULL, " ");
+                                          }
+                                          // ret = strtok(ret, " ");
+                                          // code = cat(code, "{", $7, , numLoop);
+                                          code = cat(code, "{", $7, ret, "++;\n");
+                                          code = cat(code, "goto for", numLoop, "", "");
                                           code = cat(code, ";}\n", "exitLoop", numLoop, ":;");
                                           free(numLoop);
                                           loopGoto++;
