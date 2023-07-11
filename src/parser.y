@@ -78,7 +78,7 @@ stmt : decl_var {
         char * code, * output, * substring;
         char format[1];
         
-        substring = strstr($1->name, "temp");
+        substring = strstr($1->name, "st_temp_var_");
         if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
         else if (strcmp($1->type, "bool") == 0) {
           if (strcmp($1->sValue, "0") == 0) output = cat("\"false\"", "", "", "", "");
@@ -101,7 +101,7 @@ stmt : decl_var {
         char * code, * output, * substring;
         char format[1];
         
-        substring = strstr($1->name, "temp");
+        substring = strstr($1->name, "st_temp_var_");
         if (substring != NULL) output = output = cat("\"", $1->sValue, "\"", "", "");
         else if (strcmp($1->type, "bool") == 0) {
           if (strcmp($1->sValue, "0") == 0) output = cat("\"false\"", "", "", "", "");
